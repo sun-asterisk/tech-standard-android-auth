@@ -2,6 +2,7 @@ package com.sun.auth.credentials
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.gson.GsonBuilder
 import com.sun.auth.credentials.interceptors.BasicAuthInterceptor
@@ -16,7 +17,9 @@ import com.sun.auth.credentials.repositories.remote.AuthRemoteDataSource
 import com.sun.auth.credentials.repositories.remote.NonAuthApi
 import com.sun.auth.credentials.results.AuthCallback
 import com.sun.auth.credentials.results.AuthException
+import com.sun.auth.credentials.results.AuthTokenChanged
 import com.sun.auth.credentials.utils.ACTION_REFRESH_TOKEN_EXPIRED
+import com.sun.auth.credentials.utils.PREF_LOGIN_TOKEN
 import okhttp3.Credentials
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType
@@ -25,9 +28,6 @@ import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.PATCH
-import retrofit2.http.POST
-import retrofit2.http.PUT
 import java.util.concurrent.TimeUnit
 
 class CredentialsAuth private constructor(private val builder: Builder) {
@@ -40,9 +40,17 @@ class CredentialsAuth private constructor(private val builder: Builder) {
             .excludeFieldsWithoutExposeAnnotation()
             .create()
     }
+    private val sharedPrefApi by lazy { SharedPrefApiImpl(builder.context, gson) }
     private val localBroadcastManager: LocalBroadcastManager by lazy {
         LocalBroadcastManager.getInstance(builder.context)
     }
+
+    private val sharedPrefChangeListener =
+        OnSharedPreferenceChangeListener { _, key ->
+            if (key == PREF_LOGIN_TOKEN) {
+                updateRefreshTokenRequest(builder.authTokenChanged?.onTokenUpdate(getToken()))
+            }
+        }
 
     /**
      * Login user with given info.
@@ -81,7 +89,8 @@ class CredentialsAuth private constructor(private val builder: Builder) {
     }
 
     /**
-     * Sets the refresh token [Request] with full url, request body. Ex
+     * Manually call refresh token. (Try to do this automatically by using [TokenAuthenticator])
+     * @param request The refresh token [Request] with full url, request body. Ex
      * ```kt
      *  val json = JsonObject().apply {
      *     addProperty("refresh_token", refreshToken)
@@ -90,24 +99,13 @@ class CredentialsAuth private constructor(private val builder: Builder) {
      *  val requestBody = json.toString().toRequestBody(CredentialsAuth.JSON_MEDIA_TYPE)
      *  val request = Request.Builder()
      *    .url("https://your.url/api/v1/auth_tokens")
-     *    .put(requestBody)
+     *    .post(requestBody)
      *    .build()
-     *  Credentials.getInstance().setRefreshTokenRequest(request)
      * ```
-     * @param request the http refresh token request, maybe a [PUT], [POST] or [PATCH] request
-     */
-    fun setRefreshTokenRequest(request: Request) {
-        refreshTokenRequest = request
-    }
-
-    /**
-     * Manually call refresh token. Try to do it automatically using [TokenAuthenticator].
-     * @param request The http request for refreshing token.
      * @param callback The response success or failure when try to call refresh token.
      */
     suspend fun <T : AuthToken> refreshToken(request: Request, callback: AuthCallback<T>?) {
         try {
-            refreshTokenRequest = request
             val call = getOrCreateClient().newCall(request)
             callback?.success(repository.refreshToken(call, authTokenClazz()))
         } catch (e: Exception) {
@@ -115,18 +113,22 @@ class CredentialsAuth private constructor(private val builder: Builder) {
         }
     }
 
-    internal fun saveToken(token: AuthToken?) {
-        token?.let { repository.saveToken(token) }
-    }
-
     internal suspend fun <T : AuthToken> refreshToken(): T? {
+        checkNotNull(refreshTokenRequest) {
+            "You must build refresh token request first via Builder.authTokenChanged()!"
+        }
         return refreshTokenRequest?.let {
             val call = getOrCreateClient().newCall(it)
             repository.refreshToken(call, authTokenClazz())
         }
     }
 
+    internal fun saveToken(token: AuthToken?) {
+        token?.let { repository.saveToken(token) }
+    }
+
     internal fun removeToken() {
+        unregisterTokenChanged()
         repository.removeToken()
     }
 
@@ -140,16 +142,16 @@ class CredentialsAuth private constructor(private val builder: Builder) {
 
     private fun buildDependencies() {
         val nonAuthApi = buildRetrofit().create(NonAuthApi::class.java)
-        val sharedPrefApi = SharedPrefApiImpl(builder.context, gson)
         val remoteDataSource = AuthRemoteDataSource(nonAuthApi)
         val localDataSource = AuthLocalDataSource(sharedPrefApi)
 
+        registerForTokenChanged()
         repository = AuthRepositoryImpl(remoteDataSource, localDataSource, gson)
     }
 
     private fun buildRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(DEFAULT_BASE_URL)
+            .baseUrl(DEFAULT_BASE_URL) // This base url will be replaced by full login url
             .client(getOrCreateClient())
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -180,6 +182,18 @@ class CredentialsAuth private constructor(private val builder: Builder) {
         return builder.authTokenClazz as Class<T>
     }
 
+    private fun updateRefreshTokenRequest(request: Request?) {
+        refreshTokenRequest = request
+    }
+
+    private fun registerForTokenChanged() {
+        sharedPrefApi.registerOnSharedPreferenceChangeListener(sharedPrefChangeListener)
+    }
+
+    private fun unregisterTokenChanged() {
+        sharedPrefApi.unregisterOnSharedPreferenceChangeListener(sharedPrefChangeListener)
+    }
+
     companion object {
         val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
         private const val DEFAULT_BASE_URL = "https://unused.api.url/"
@@ -206,6 +220,7 @@ class CredentialsAuth private constructor(private val builder: Builder) {
         internal lateinit var loginUrl: String
         internal lateinit var authTokenClazz: Class<*>
 
+        internal var authTokenChanged: AuthTokenChanged<*>? = null
         internal var basicAuthentication: String = ""
         internal var httpLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BODY
         internal var connectTimeout = 30000L
@@ -265,6 +280,13 @@ class CredentialsAuth private constructor(private val builder: Builder) {
         fun headers(headers: Headers) = apply { customHeaders = headers }
 
         /**
+         * Listens for token update and update refresh token request if needed.
+         * @param listener The callback will be run when token is changed.
+         */
+        fun <T : AuthToken> authTokenChanged(listener: AuthTokenChanged<T>) =
+            apply { authTokenChanged = listener }
+
+        /**
          * Sets basic authentication for API request via username/password.
          * @param username username of basic authentication.
          * @param password password of basic authentication.
@@ -275,6 +297,10 @@ class CredentialsAuth private constructor(private val builder: Builder) {
             }
         }
 
+        /**
+         * Build the CredentialsAuth instance.
+         * @return CredentialsAuth instance.
+         */
         fun build() = createOrGet(this)
     }
 }

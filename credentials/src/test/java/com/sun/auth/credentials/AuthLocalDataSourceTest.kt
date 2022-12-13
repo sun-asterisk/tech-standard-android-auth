@@ -18,6 +18,7 @@ class AuthLocalDataSourceTest : BaseUnitTest() {
 
     @MockK(relaxed = true)
     private lateinit var sharedPrefApi: SharedPrefApi
+
     @InjectMockKs
     private lateinit var localDataSource: AuthLocalDataSource
 

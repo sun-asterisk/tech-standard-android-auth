@@ -3,7 +3,7 @@ package com.sun.auth.credentials.results
 import com.sun.auth.credentials.repositories.model.AuthToken
 
 /**
- * Credentials authentication callback.
+ * Interface definition for a callback to be invoked when do authentication via credentials.
  */
 interface AuthCallback<T : AuthToken> {
     /**
