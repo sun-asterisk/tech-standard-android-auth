@@ -31,20 +31,20 @@ class AuthRepositoryImplTest : BaseUnitTest() {
     }
 
     @Test
-    fun login() {
-        every { remote.login(any(), any()) } returns ""
+    fun signIn() {
+        every { remote.signIn(any(), any()) } returns ""
         every { gson.fromJson("", AuthToken::class.java) } returns mockk()
         every { local.saveToken(any()) } returns Unit
 
         val token = runBlocking {
-            authRepositoryImpl.login(
+            authRepositoryImpl.signIn(
                 url = "",
                 requestBody = "",
                 responseClazz = AuthToken::class.java
             )
         }
         verifyOrder {
-            remote.login(url = "", requestBody = "")
+            remote.signIn(url = "", requestBody = "")
             gson.fromJson("", AuthToken::class.java)
             local.saveToken(token)
         }

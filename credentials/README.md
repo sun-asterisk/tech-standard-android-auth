@@ -2,15 +2,15 @@
 
 This is small helper module to help you quickly do some authentication actions like:
 
-- Login with username & password.
+- SignIn with username & password.
 - Refresh token manually or automatically (if you are using `OkHttp` for API request).
 - Local check you are logged in or not.
 - Gets the token which is saved.
 - Logout current user from local.
 
-## 1 Login with username & password.
+## 1 SignIn with username & password.
 
-There are only 3 steps for login with username & password using `Credentials` module.
+There are only 3 steps for signIn with username & password using `Credentials` module.
 
 ### 1.1 Create your token model extends from [AuthToken](../credentials/src/main/java/com/sun/auth/credentials/repositories/model/AuthToken.kt)
 
@@ -38,7 +38,7 @@ data class Token(
 ```kt
 CredentialsAuth.Builder()
     .context(applicationContext)
-    .loginUrl(url = "https://your.url/api/v1/users/sign_in")
+    .signInUrl(url = "https://your.url/api/v1/users/sign_in")
     .basicAuthentication(username = "username", password = "password") // if needed
     .authTokenClazz(Token::class.java) // required
     .build()
@@ -47,13 +47,13 @@ CredentialsAuth.Builder()
 You can add more configs
 see [`CredentialsAuth.Builder`](../credentials/src/main/java/com/sun/auth/credentials/CredentialsAuth.kt)
 
-### 1.3 Call your login API to get result.
+### 1.3 Call your signIn API to get result.
 
 ```kt
-fun login(username: String, password: String) {
+fun signIn(username: String, password: String) {
     viewModelScope.launch(Dispatchers.IO) {
-        CredentialsAuth.getInstance().login(
-            requestBody = LoginRequest(username, password),
+        CredentialsAuth.getInstance().signIn(
+            requestBody = SignInRequest(username, password),
             callback = object : AuthCallback<Token> {
                 override fun success(data: Token?) {
                     _authenResult.postValue(AuthenResult(success = data))

@@ -23,10 +23,10 @@ class AuthRemoteDataSourceTest : BaseUnitTest() {
     }
 
     @Test
-    fun login() {
-        every { nonAuthApi.login(any(), any()).call() } answers { "" }
-        remoteDataSource.login("", "")
-        verify { nonAuthApi.login("", "") }
+    fun signIn() {
+        every { nonAuthApi.signIn(any(), any()).call() } answers { "" }
+        remoteDataSource.signIn("", "")
+        verify { nonAuthApi.signIn("", "") }
         confirmVerified(nonAuthApi)
     }
 

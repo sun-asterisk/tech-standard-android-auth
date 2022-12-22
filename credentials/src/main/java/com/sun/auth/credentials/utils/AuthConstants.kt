@@ -1,7 +1,7 @@
 package com.sun.auth.credentials.utils
 
 const val ACTION_REFRESH_TOKEN_EXPIRED = "ACTION_REFRESH_TOKEN_EXPIRED"
-internal const val PREF_LOGIN_TOKEN = "PREF_LOGIN_TOKEN"
+internal const val PREF_AUTH_TOKEN = "PREF_AUTH_TOKEN"
 internal const val TOKEN_AUTHORIZATION = "X-Auth-Token"
 internal const val BEARER = "Bearer"
 internal const val BASIC_AUTHORIZATION = "Authorization"

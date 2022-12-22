@@ -19,7 +19,7 @@ import com.sun.auth.credentials.results.AuthCallback
 import com.sun.auth.credentials.results.AuthException
 import com.sun.auth.credentials.results.AuthTokenChanged
 import com.sun.auth.credentials.utils.ACTION_REFRESH_TOKEN_EXPIRED
-import com.sun.auth.credentials.utils.PREF_LOGIN_TOKEN
+import com.sun.auth.credentials.utils.PREF_AUTH_TOKEN
 import okhttp3.Credentials
 import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType
@@ -47,19 +47,19 @@ class CredentialsAuth private constructor(private val builder: Builder) {
 
     private val sharedPrefChangeListener =
         OnSharedPreferenceChangeListener { _, key ->
-            if (key == PREF_LOGIN_TOKEN) {
+            if (key == PREF_AUTH_TOKEN) {
                 updateRefreshTokenRequest(builder.authTokenChanged?.onTokenUpdate(getToken()))
             }
         }
 
     /**
-     * Login user with given info.
+     * SignIn user with given info.
      * @param requestBody Request body to send with, `null` if nothing.
      * @param callback Success or failure.
      */
-    suspend fun <T : AuthToken> login(requestBody: Any?, callback: AuthCallback<T>) {
+    suspend fun <T : AuthToken> signIn(requestBody: Any?, callback: AuthCallback<T>) {
         try {
-            callback.success(repository.login(builder.loginUrl, requestBody, authTokenClazz()))
+            callback.success(repository.signIn(builder.signInUrl, requestBody, authTokenClazz()))
         } catch (e: Exception) {
             callback.failure(AuthException(e))
         }
@@ -68,17 +68,17 @@ class CredentialsAuth private constructor(private val builder: Builder) {
     /**
      * True if the user is logged in, otherwise is false.
      */
-    fun <T : AuthToken> isLoggedIn(): Boolean {
+    fun <T : AuthToken> isSignedIn(): Boolean {
         return getToken<T>() != null
     }
 
     /**
-     * Do remove the logged user info.
-     * @param doOnLoggedOut Callback after local logged out.
+     * Do remove the signed out user info.
+     * @param doOnSignedOut Callback after local signed out.
      */
-    fun logout(doOnLoggedOut: () -> Unit) {
+    fun signOut(doOnSignedOut: () -> Unit) {
         removeToken()
-        doOnLoggedOut()
+        doOnSignedOut()
     }
 
     /**
@@ -151,7 +151,7 @@ class CredentialsAuth private constructor(private val builder: Builder) {
 
     private fun buildRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(DEFAULT_BASE_URL) // This base url will be replaced by full login url
+            .baseUrl(DEFAULT_BASE_URL) // This base url will be replaced by full sign in url
             .client(getOrCreateClient())
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -200,7 +200,7 @@ class CredentialsAuth private constructor(private val builder: Builder) {
         private var instance: CredentialsAuth? = null
         private fun createOrGet(builder: Builder) {
             checkNotNull(builder.context) { "Context must be provided!" }
-            checkNotNull(builder.loginUrl) { "Please provide full Login URL!" }
+            checkNotNull(builder.signInUrl) { "Please provide full signIn URL!" }
             checkNotNull(builder.authTokenClazz) {
                 "Token response class must be instanced of AuthToken and provided first!"
             }
@@ -217,7 +217,7 @@ class CredentialsAuth private constructor(private val builder: Builder) {
     @Suppress("UNUSED")
     class Builder {
         internal lateinit var context: Context
-        internal lateinit var loginUrl: String
+        internal lateinit var signInUrl: String
         internal lateinit var authTokenClazz: Class<*>
 
         internal var authTokenChanged: AuthTokenChanged<*>? = null
@@ -235,13 +235,13 @@ class CredentialsAuth private constructor(private val builder: Builder) {
         fun context(context: Context) = apply { this.context = context.applicationContext }
 
         /**
-         * Sets full login URL. This is required. Ex:
+         * Sets full signIn URL. This is required. Ex:
          * ```kt
          *  "https://your.url/api/v1/users/sign_in"
          * ```
-         * @param url login url with scheme & path
+         * @param url signIn url with scheme & path
          */
-        fun loginUrl(url: String) = apply { loginUrl = url }
+        fun signInUrl(url: String) = apply { signInUrl = url }
 
         /**
          * Sets [AuthToken] implementation java class. This help for casting via generic class. This is required.

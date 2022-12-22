@@ -9,5 +9,5 @@ import retrofit2.http.Url
 internal interface NonAuthApi {
 
     @POST
-    fun login(@Url url: String, @Body requestBody: Any?): Call<ResponseBody>
+    fun signIn(@Url url: String, @Body requestBody: Any?): Call<ResponseBody>
 }
