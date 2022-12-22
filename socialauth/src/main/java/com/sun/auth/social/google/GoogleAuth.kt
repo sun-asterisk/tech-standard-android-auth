@@ -111,14 +111,7 @@ internal class GoogleAuth(
             val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent).build()
             signInLauncher?.launch(intentSenderRequest)
         } catch (e: Exception) {
-            if (e is FirebaseAuthInvalidCredentialsException) {
-                signInCallback?.onResult(
-                    user = null,
-                    error = AuthApiException(ModifiedDateTimeException())
-                )
-            } else {
-                signInCallback?.onResult(user = null, error = AuthApiException(e))
-            }
+            signInCallback?.onResult(user = null, error = AuthApiException(e))
         }
     }
 
@@ -132,7 +125,14 @@ internal class GoogleAuth(
                     error = null
                 )
             }.addOnFailureListener {
-                signInCallback?.onResult(user = null, error = AuthApiException(it))
+                if (it is FirebaseAuthInvalidCredentialsException) {
+                    signInCallback?.onResult(
+                        user = null,
+                        error = AuthApiException(ModifiedDateTimeException())
+                    )
+                } else {
+                    signInCallback?.onResult(user = null, error = AuthApiException(it))
+                }
             }
     }
 
