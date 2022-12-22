@@ -1,3 +1,3 @@
 package com.sun.auth.social.model
 
-abstract class SocialConfig
+abstract class SocialConfig internal constructor()

@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.sun.auth.sample.databinding.ActivityGoogleAuthBinding
-import com.sun.auth.social.model.ModifiedDateTimeException
+import com.sun.auth.social.google.ModifiedDateTimeException
 
 class GoogleAuthActivity : AppCompatActivity() {
 
@@ -48,7 +48,7 @@ class GoogleAuthActivity : AppCompatActivity() {
                     if (it.exception is ModifiedDateTimeException) {
                         displayMessage("Your datetime is changed, please correct!")
                     } else {
-                        displayMessage("SignIn error ${it.exception.message}")
+                        displayMessage("SignIn error ${it.exception.message ?: "Cancelled"}")
                     }
                 } else {
                     displayMessage("SignIn success")

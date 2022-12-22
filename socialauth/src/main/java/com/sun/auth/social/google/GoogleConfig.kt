@@ -14,6 +14,11 @@ class GoogleConfig : SocialConfig() {
      */
     var enableOneTapSignIn = true
 
+    /**
+     * To prevent a new account being created when the user has an existing account registered with the application.
+     */
+    var enableFilterByAuthorizedAccounts = true
+
     companion object {
         internal fun apply(
             clientId: String,

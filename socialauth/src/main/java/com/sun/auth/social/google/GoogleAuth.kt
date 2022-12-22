@@ -2,7 +2,6 @@ package com.sun.auth.social.google
 
 import android.app.Activity
 import android.app.PendingIntent
-import android.util.Log
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -14,13 +13,17 @@ import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.GetSignInIntentRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.sun.auth.social.BaseSocialAuth
 import com.sun.auth.social.SocialAuth.getPlatformConfig
+import com.sun.auth.social.SocialAuthApiException
+import com.sun.auth.social.SocialCancelAuthException
 import com.sun.auth.social.callback.SocialAuthSignInCallback
 import com.sun.auth.social.callback.SocialAuthSignOutCallback
-import com.sun.auth.social.model.*
+import com.sun.auth.social.model.SocialType
+import com.sun.auth.social.model.SocialUser
 
 internal class GoogleAuth(
     activity: FragmentActivity,
@@ -40,16 +43,12 @@ internal class GoogleAuth(
 
     override fun onCreate(owner: LifecycleOwner) {
         signInLauncher = activity?.activityResultRegistry?.register(
-            GOOGLE_SIGN_IN_REQUEST,
+            REQUEST_GOOGLE_SIGN_IN,
             owner,
             ActivityResultContracts.StartIntentSenderForResult()
         ) { result ->
             handleSignInResult(result)
         }
-    }
-
-    override fun onDestroy(owner: LifecycleOwner) {
-        Log.e("x", "xxxx onDestroy is called")
     }
 
     override fun signIn() {
@@ -65,22 +64,29 @@ internal class GoogleAuth(
                 launchSignIn(it.result)
             }
             .addOnFailureListener {
-                signInCallback?.onResult(user = null, error = AuthApiException(it))
+                signInCallback?.onResult(user = null, error = SocialAuthApiException(it))
             }
     }
 
     override fun handleSignInResult(result: ActivityResult) {
         if (result.resultCode == Activity.RESULT_CANCELED) {
-            signInCallback?.onResult(user = null, error = CancelAuthException())
+            signInCallback?.onResult(user = null, error = SocialCancelAuthException())
             return
         }
-
-        val googleCredential = signInClient.getSignInCredentialFromIntent(result.data)
-        val idToken = googleCredential.googleIdToken
-        if (idToken.isNullOrBlank()) {
-            signInCallback?.onResult(user = null, error = NoTokenGeneratedException())
-        } else {
-            firebaseAuthWithGoogle(idToken)
+        try {
+            val googleCredential = signInClient.getSignInCredentialFromIntent(result.data)
+            val idToken = googleCredential.googleIdToken
+            if (idToken.isNullOrBlank()) {
+                signInCallback?.onResult(user = null, error = NoTokenGeneratedException())
+            } else {
+                firebaseAuthWithGoogle(idToken)
+            }
+        } catch (e: ApiException) {
+            if (e.statusCode == Activity.RESULT_CANCELED) {
+                signInCallback?.onResult(user = null, error = SocialCancelAuthException())
+            } else {
+                signInCallback?.onResult(user = null, error = SocialAuthApiException(e))
+            }
         }
     }
 
@@ -97,12 +103,11 @@ internal class GoogleAuth(
             firebaseAuth.signOut()
             signOutCallback?.onResult()
         }.addOnFailureListener {
-            signOutCallback?.onResult(AuthApiException(it))
+            signOutCallback?.onResult(SocialAuthApiException(it))
         }
-
     }
 
-    override fun revoke() {
+    override fun revokeAccess() {
         // Do nothing
     }
 
@@ -111,7 +116,7 @@ internal class GoogleAuth(
             val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent).build()
             signInLauncher?.launch(intentSenderRequest)
         } catch (e: Exception) {
-            signInCallback?.onResult(user = null, error = AuthApiException(e))
+            signInCallback?.onResult(user = null, error = SocialAuthApiException(e))
         }
     }
 
@@ -128,10 +133,10 @@ internal class GoogleAuth(
                 if (it is FirebaseAuthInvalidCredentialsException) {
                     signInCallback?.onResult(
                         user = null,
-                        error = AuthApiException(ModifiedDateTimeException())
+                        error = SocialAuthApiException(ModifiedDateTimeException())
                     )
                 } else {
-                    signInCallback?.onResult(user = null, error = AuthApiException(it))
+                    signInCallback?.onResult(user = null, error = SocialAuthApiException(it))
                 }
             }
     }
@@ -142,7 +147,7 @@ internal class GoogleAuth(
                 BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                     .setSupported(true)
                     .setServerClientId(config.webClientId)
-                    .setFilterByAuthorizedAccounts(false)
+                    .setFilterByAuthorizedAccounts(config.enableFilterByAuthorizedAccounts)
                     .build()
             ).build()
 
@@ -151,12 +156,12 @@ internal class GoogleAuth(
                 launchSignIn(it.pendingIntent)
             }
             .addOnFailureListener {
-                signInCallback?.onResult(user = null, error = AuthApiException(it))
+                signInCallback?.onResult(user = null, error = SocialAuthApiException(it))
             }
 
     }
 
     companion object {
-        private const val GOOGLE_SIGN_IN_REQUEST = "GOOGLE_SIGN_IN_REQUEST"
+        private const val REQUEST_GOOGLE_SIGN_IN = "REQUEST_GOOGLE_SIGN_IN"
     }
 }

@@ -29,8 +29,15 @@ class SampleApplication : Application() {
         initSocialAuth {
             google(getString(R.string.google_web_client_id)) {
                 enableOneTapSignIn = true
+                enableFilterByAuthorizedAccounts = true
             }
         }
+        /*
+        Or use each social config.
+        initGoogleAuth(getString(R.string.google_web_client_id)) {
+            enableOneTapSignIn = true
+        }
+        */
     }
 
     private fun buildRefreshTokenRequest(token: Token?): Request {

@@ -5,7 +5,7 @@ package com.sun.auth.social.callback
  */
 interface SocialAuthSignOutCallback {
     /**
-     * Sign in callback with data or error.
+     * Sign out callback with success or error.
      * @param error The [Throwable] when sign out error, or `null` when sign out success.
      */
     fun onResult(error: Throwable? = null)
