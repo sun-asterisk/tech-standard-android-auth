@@ -1,10 +1,11 @@
-package com.sun.sample
+package com.sun.auth.sample
 
 import android.app.Application
 import com.google.gson.JsonObject
 import com.sun.auth.credentials.CredentialsAuth
 import com.sun.auth.credentials.results.AuthTokenChanged
-import com.sun.sample.credentials.Token
+import com.sun.auth.sample.credentials.Token
+import com.sun.auth.social.initSocialAuth
 import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -14,7 +15,7 @@ class SampleApplication : Application() {
         super.onCreate()
         CredentialsAuth.Builder()
             .context(applicationContext)
-            .loginUrl(url = "https://your.url/api/v1/users/sign_in")
+            .signInUrl(url = "https://your.url/api/v1/users/sign_in")
             .basicAuthentication(username = "username", password = "password")
             .authTokenClazz(Token::class.java)
             .authTokenChanged(object : AuthTokenChanged<Token> {
@@ -24,6 +25,19 @@ class SampleApplication : Application() {
                 }
             })
             .build()
+
+        initSocialAuth {
+            google(getString(R.string.google_web_client_id)) {
+                enableOneTapSignIn = true
+                enableFilterByAuthorizedAccounts = true
+            }
+        }
+        /*
+        Or use each social config.
+        initGoogleAuth(getString(R.string.google_web_client_id)) {
+            enableOneTapSignIn = true
+        }
+        */
     }
 
     private fun buildRefreshTokenRequest(token: Token?): Request {

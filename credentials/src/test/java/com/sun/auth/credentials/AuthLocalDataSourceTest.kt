@@ -1,10 +1,10 @@
 package com.sun.auth.credentials
 
 import com.sun.auth.base.BaseUnitTest
-import com.sun.auth.credentials.repositories.model.AuthToken
-import com.sun.auth.credentials.repositories.local.SharedPrefApi
 import com.sun.auth.credentials.repositories.local.AuthLocalDataSource
-import com.sun.auth.credentials.utils.PREF_LOGIN_TOKEN
+import com.sun.auth.credentials.repositories.local.SharedPrefApi
+import com.sun.auth.credentials.repositories.model.AuthToken
+import com.sun.auth.credentials.utils.PREF_AUTH_TOKEN
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -32,7 +32,7 @@ class AuthLocalDataSourceTest : BaseUnitTest() {
         val token = mockk<AuthToken>()
         every { sharedPrefApi.put(any(), any<AuthToken>()) } returns Unit
         localDataSource.saveToken(token)
-        verify { sharedPrefApi.put(PREF_LOGIN_TOKEN, token) }
+        verify { sharedPrefApi.put(PREF_AUTH_TOKEN, token) }
     }
 
     @Test
@@ -41,7 +41,7 @@ class AuthLocalDataSourceTest : BaseUnitTest() {
         val token = mockk<AuthToken>()
         every { sharedPrefApi.get(any(), clazz) } returns token
         val savedToken = localDataSource.getToken(clazz)
-        verify { sharedPrefApi.get(PREF_LOGIN_TOKEN, clazz) }
+        verify { sharedPrefApi.get(PREF_AUTH_TOKEN, clazz) }
         assertEquals(token, savedToken)
     }
 
@@ -49,6 +49,6 @@ class AuthLocalDataSourceTest : BaseUnitTest() {
     fun removeToken() {
         every { sharedPrefApi.removeKey(any()) } returns Unit
         localDataSource.removeToken()
-        verify { sharedPrefApi.removeKey(PREF_LOGIN_TOKEN) }
+        verify { sharedPrefApi.removeKey(PREF_AUTH_TOKEN) }
     }
 }

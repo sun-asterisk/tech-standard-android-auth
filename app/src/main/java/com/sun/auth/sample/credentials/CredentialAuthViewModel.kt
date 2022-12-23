@@ -1,4 +1,4 @@
-package com.sun.sample.credentials
+package com.sun.auth.sample.credentials
 
 import android.util.Patterns
 import androidx.lifecycle.LiveData
@@ -8,34 +8,34 @@ import androidx.lifecycle.viewModelScope
 import com.sun.auth.credentials.CredentialsAuth
 import com.sun.auth.credentials.results.AuthCallback
 import com.sun.auth.credentials.results.AuthException
-import com.sun.sample.R
+import com.sun.auth.sample.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import okhttp3.Request
 
-class LoginViewModel : ViewModel() {
+class CredentialAuthViewModel : ViewModel() {
 
-    private val _loginForm = MutableLiveData<LoginFormState>()
-    val loginFormState: LiveData<LoginFormState> = _loginForm
+    private val _signInFormState = MutableLiveData<SignInFormState>()
+    val signInFormState: LiveData<SignInFormState> = _signInFormState
 
-    private val _authenResult = MutableLiveData<AuthenResult>()
-    val authenResult: LiveData<AuthenResult> = _authenResult
+    private val _credentialAuthResult = MutableLiveData<CredentialAuthResult>()
+    val credentialAuthResult: LiveData<CredentialAuthResult> = _credentialAuthResult
 
-    private val _refreshTokenResult = MutableLiveData<AuthenResult?>()
-    val refreshTokenResult: LiveData<AuthenResult?> = _refreshTokenResult
+    private val _refreshTokenResult = MutableLiveData<CredentialAuthResult?>()
+    val refreshTokenResult: LiveData<CredentialAuthResult?> = _refreshTokenResult
 
-    fun login(username: String, password: String) {
+    fun signIn(username: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            CredentialsAuth.getInstance().login(
-                requestBody = LoginRequest(username, password),
+            CredentialsAuth.getInstance().signIn(
+                requestBody = SignInRequest(username, password),
                 callback = object : AuthCallback<Token> {
                     override fun success(data: Token?) {
-                        _authenResult.postValue(AuthenResult(success = data))
+                        _credentialAuthResult.postValue(CredentialAuthResult(success = data))
                     }
 
                     override fun failure(exception: AuthException?) {
-                        _authenResult.postValue(AuthenResult(error = exception))
+                        _credentialAuthResult.postValue(CredentialAuthResult(error = exception))
                     }
                 }
             )
@@ -47,11 +47,11 @@ class LoginViewModel : ViewModel() {
     }
 
     fun logout(callback: () -> Unit) {
-        CredentialsAuth.getInstance().logout(callback)
+        CredentialsAuth.getInstance().signOut(callback)
     }
 
     fun isLoggedIn(): Boolean {
-        return CredentialsAuth.getInstance().isLoggedIn<Token>()
+        return CredentialsAuth.getInstance().isSignedIn<Token>()
     }
 
     // Sample for manually refresh token.
@@ -61,23 +61,23 @@ class LoginViewModel : ViewModel() {
                 request = buildRefreshTokenRequest(),
                 callback = object : AuthCallback<Token> {
                     override fun success(data: Token?) {
-                        _refreshTokenResult.postValue(AuthenResult(success = data))
+                        _refreshTokenResult.postValue(CredentialAuthResult(success = data))
                     }
 
                     override fun failure(exception: AuthException?) {
-                        _refreshTokenResult.postValue(AuthenResult(error = exception))
+                        _refreshTokenResult.postValue(CredentialAuthResult(error = exception))
                     }
                 })
         }
     }
 
-    fun loginDataChanged(username: String, password: String) {
+    fun signInDataChanged(username: String, password: String) {
         if (!isUserNameValid(username)) {
-            _loginForm.value = LoginFormState(usernameError = R.string.invalid_username)
+            _signInFormState.value = SignInFormState(usernameError = R.string.invalid_username)
         } else if (!isPasswordValid(password)) {
-            _loginForm.value = LoginFormState(passwordError = R.string.invalid_password)
+            _signInFormState.value = SignInFormState(passwordError = R.string.invalid_password)
         } else {
-            _loginForm.value = LoginFormState(isDataValid = true)
+            _signInFormState.value = SignInFormState(isDataValid = true)
         }
     }
 

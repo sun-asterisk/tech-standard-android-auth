@@ -1,4 +1,4 @@
-package com.sun.sample
+package com.sun.auth.sample
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

@@ -2,10 +2,10 @@ package com.sun.auth.credentials
 
 import com.google.gson.Gson
 import com.sun.auth.base.BaseUnitTest
-import com.sun.auth.credentials.repositories.model.AuthToken
-import com.sun.auth.credentials.repositories.local.AuthLocalDataSource
-import com.sun.auth.credentials.repositories.remote.AuthRemoteDataSource
 import com.sun.auth.credentials.repositories.AuthRepositoryImpl
+import com.sun.auth.credentials.repositories.local.AuthLocalDataSource
+import com.sun.auth.credentials.repositories.model.AuthToken
+import com.sun.auth.credentials.repositories.remote.AuthRemoteDataSource
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -31,20 +31,20 @@ class AuthRepositoryImplTest : BaseUnitTest() {
     }
 
     @Test
-    fun login() {
-        every { remote.login(any(), any()) } returns ""
+    fun signIn() {
+        every { remote.signIn(any(), any()) } returns ""
         every { gson.fromJson("", AuthToken::class.java) } returns mockk()
         every { local.saveToken(any()) } returns Unit
 
         val token = runBlocking {
-            authRepositoryImpl.login(
+            authRepositoryImpl.signIn(
                 url = "",
                 requestBody = "",
                 responseClazz = AuthToken::class.java
             )
         }
         verifyOrder {
-            remote.login(url = "", requestBody = "")
+            remote.signIn(url = "", requestBody = "")
             gson.fromJson("", AuthToken::class.java)
             local.saveToken(token)
         }

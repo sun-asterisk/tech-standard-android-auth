@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 rootProject.name = "tech-standard-android-auth"
 include ':app'
 include ':credentials'
+include ':socialauth'
