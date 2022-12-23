@@ -10,4 +10,4 @@ class NoTokenGeneratedException : SocialAuthException(null)
 /**
  * This exception occurs when User's device time is incorrect, must be correct to sign in.
  */
-class ModifiedDateTimeException: SocialAuthException(null)
+class ModifiedDateTimeException : SocialAuthException(null)

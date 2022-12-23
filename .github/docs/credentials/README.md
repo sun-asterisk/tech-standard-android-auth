@@ -12,7 +12,7 @@ This is small helper module to help you quickly do some authentication actions l
 
 There are only 3 steps for signIn with username & password using `Credentials` module.
 
-### 1.1 Create your token model extends from [AuthToken](../credentials/src/main/java/com/sun/auth/credentials/repositories/model/AuthToken.kt)
+### 1.1 Create your token model extends from [AuthToken](../../../credentials/src/main/java/com/sun/auth/credentials/repositories/model/AuthToken.kt)
 
 ```kt
 data class Token(
@@ -33,7 +33,7 @@ data class Token(
 }
 ```
 
-### 1.2 Create your config for Credentials via [Builder](../credentials/src/main/java/com/sun/auth/credentials/CredentialsAuth.kt).
+### 1.2 Create your config for Credentials via [Builder](../../../credentials/src/main/java/com/sun/auth/credentials/CredentialsAuth.kt).
 
 ```kt
 CredentialsAuth.Builder()
@@ -45,7 +45,7 @@ CredentialsAuth.Builder()
 ```
 
 You can add more configs
-see [`CredentialsAuth.Builder`](../credentials/src/main/java/com/sun/auth/credentials/CredentialsAuth.kt)
+see [`CredentialsAuth.Builder`](../../../credentials/src/main/java/com/sun/auth/credentials/CredentialsAuth.kt)
 
 ### 1.3 Call your signIn API to get result.
 

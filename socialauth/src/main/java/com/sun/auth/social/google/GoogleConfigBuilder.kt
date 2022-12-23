@@ -11,6 +11,6 @@ import com.sun.auth.social.utils.invoke
  * @param setup Other Google optional configurations.
  */
 fun Context.initGoogleAuth(webClientId: String, setup: GoogleConfig.() -> Unit = {}) {
-    val item = SocialType.GOOGLE to  GoogleConfig.apply(webClientId, invoke(setup))
+    val item = SocialType.GOOGLE to GoogleConfig.apply(webClientId, invoke(setup))
     SocialAuth.initialize(this, mapOf(item))
 }

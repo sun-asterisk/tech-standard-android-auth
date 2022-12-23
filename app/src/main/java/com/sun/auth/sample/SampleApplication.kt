@@ -4,8 +4,8 @@ import android.app.Application
 import com.google.gson.JsonObject
 import com.sun.auth.credentials.CredentialsAuth
 import com.sun.auth.credentials.results.AuthTokenChanged
-import com.sun.auth.social.initSocialAuth
 import com.sun.auth.sample.credentials.Token
+import com.sun.auth.social.initSocialAuth
 import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody

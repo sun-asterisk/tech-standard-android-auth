@@ -5,8 +5,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.sun.auth.social.callback.SocialAuthSignInCallback
 import com.sun.auth.social.callback.SocialAuthSignOutCallback
-import com.sun.auth.social.model.SocialType
 import com.sun.auth.social.model.SocialConfig
+import com.sun.auth.social.model.SocialType
 import com.sun.auth.social.model.SocialUser
 import com.sun.auth.social.utils.weak
 

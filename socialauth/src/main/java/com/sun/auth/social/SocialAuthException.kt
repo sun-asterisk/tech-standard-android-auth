@@ -15,4 +15,4 @@ class SocialCancelAuthException : SocialAuthException(null)
 /**
  * This exception occurs rarely, developer should check. Maybe try to sign out and sign in again.
  */
-class SocialAuthApiException(throwable: Throwable?): SocialAuthException(throwable)
+class SocialAuthApiException(throwable: Throwable?) : SocialAuthException(throwable)

@@ -1,9 +1,9 @@
 package com.sun.auth.credentials
 
 import com.sun.auth.base.BaseUnitTest
-import com.sun.auth.credentials.repositories.model.AuthToken
-import com.sun.auth.credentials.repositories.local.SharedPrefApi
 import com.sun.auth.credentials.repositories.local.AuthLocalDataSource
+import com.sun.auth.credentials.repositories.local.SharedPrefApi
+import com.sun.auth.credentials.repositories.model.AuthToken
 import com.sun.auth.credentials.utils.PREF_AUTH_TOKEN
 import io.mockk.MockKAnnotations
 import io.mockk.every

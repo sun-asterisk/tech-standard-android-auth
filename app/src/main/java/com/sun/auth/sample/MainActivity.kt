@@ -1,8 +1,8 @@
 package com.sun.auth.sample
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.sun.auth.sample.credentials.CredentialAuthActivity
 import com.sun.auth.sample.databinding.ActivityMainBinding
 import com.sun.auth.sample.google.GoogleAuthActivity
