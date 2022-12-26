@@ -1,4 +1,4 @@
-package com.sun.auth.sample.google
+package com.sun.auth.sample.facebook
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -11,7 +11,7 @@ import com.sun.auth.social.callback.SocialAuthSignOutCallback
 import com.sun.auth.social.model.SocialType
 import com.sun.auth.social.model.SocialUser
 
-class GoogleAuthViewModel : ViewModel() {
+class FacebookAuthViewModel : ViewModel() {
     private val _signInState = MutableLiveData<SocialAuthResult>()
     val signInState: LiveData<SocialAuthResult> = _signInState
 
@@ -19,24 +19,24 @@ class GoogleAuthViewModel : ViewModel() {
     val signOutState: LiveData<Throwable?> = _signOutState
 
     fun signIn() {
-        SocialAuth.signIn(SocialType.GOOGLE)
+        SocialAuth.signIn(SocialType.FACEBOOK)
     }
 
     fun logout() {
-        SocialAuth.signOut(SocialType.GOOGLE)
+        SocialAuth.signOut(SocialType.FACEBOOK)
     }
 
     fun isLoggedIn(): Boolean {
-        return SocialAuth.isSignedIn(SocialType.GOOGLE)
+        return SocialAuth.isSignedIn(SocialType.FACEBOOK)
     }
 
     fun getUser(): SocialUser? {
-        return SocialAuth.getUser(SocialType.GOOGLE)
+        return SocialAuth.getUser(SocialType.FACEBOOK)
     }
 
-    fun initGoogleSignIn(activity: FragmentActivity) {
+    fun initFacebookSignIn(activity: FragmentActivity) {
         SocialAuth.initialize(
-            types = arrayOf(SocialType.GOOGLE),
+            types = arrayOf(SocialType.FACEBOOK),
             activity = activity,
             signInCallback = object : SocialAuthSignInCallback {
                 override fun onResult(user: SocialUser?, error: Throwable?) {
@@ -47,6 +47,7 @@ class GoogleAuthViewModel : ViewModel() {
                 override fun onResult(error: Throwable?) {
                     _signOutState.value = error
                 }
-            })
+            },
+        )
     }
 }

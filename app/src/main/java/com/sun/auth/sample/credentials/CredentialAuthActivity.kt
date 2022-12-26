@@ -10,14 +10,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.sun.auth.sample.R
+import com.sun.auth.sample.ViewModelFactory
 import com.sun.auth.sample.databinding.ActivityCredentialAuthBinding
 
 class CredentialAuthActivity : AppCompatActivity() {
 
     private val credentialAuthViewModel: CredentialAuthViewModel by lazy {
-        ViewModelProvider(
-            this, CredentialAuthViewModelFactory()
-        ).get(CredentialAuthViewModel::class.java)
+        ViewModelProvider(this, ViewModelFactory()).get(CredentialAuthViewModel::class.java)
     }
     private lateinit var binding: ActivityCredentialAuthBinding
 

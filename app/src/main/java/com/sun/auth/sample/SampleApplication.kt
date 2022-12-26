@@ -31,6 +31,13 @@ class SampleApplication : Application() {
                 enableOneTapSignIn = true
                 enableFilterByAuthorizedAccounts = true
             }
+            facebook(
+                appId = getString(R.string.facebook_app_id),
+                clientToken = getString(R.string.facebook_client_token)
+            ) {
+                readPermissions = listOf("public_profile")
+                enableAppEvent = false
+            }
         }
         /*
         Or use each social config.

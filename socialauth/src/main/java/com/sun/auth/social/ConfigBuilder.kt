@@ -1,6 +1,7 @@
 package com.sun.auth.social
 
 import android.content.Context
+import com.sun.auth.social.facebook.FacebookConfig
 import com.sun.auth.social.google.GoogleConfig
 import com.sun.auth.social.model.SocialConfig
 import com.sun.auth.social.model.SocialType
@@ -31,6 +32,17 @@ class ConfigBuilder internal constructor(private val context: Context) {
      */
     fun google(webClientId: String, setup: GoogleConfig.() -> Unit = {}) {
         typeMap[SocialType.GOOGLE] = GoogleConfig.apply(webClientId, invoke(setup))
+    }
+
+    /**
+     * Config for google signIn.
+     * @param appId The Facebook application Id, [follow this guide](https://firebase.google.com/docs/auth/android/facebook-login#before_you_begin)
+     * @param clientToken The Facebook client token, [follow this guide](https://firebase.google.com/docs/auth/android/facebook-login#before_you_begin)
+     * @param setup Other Facebook optional configurations.
+     */
+    fun facebook(appId: String, clientToken: String, setup: FacebookConfig.() -> Unit = {}) {
+        typeMap[SocialType.FACEBOOK] =
+            FacebookConfig.apply(context, appId, clientToken, invoke(setup))
     }
 
     fun build() {

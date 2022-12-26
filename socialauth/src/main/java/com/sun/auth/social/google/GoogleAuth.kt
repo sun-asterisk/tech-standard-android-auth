@@ -17,7 +17,8 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.sun.auth.social.BaseSocialAuth
-import com.sun.auth.social.SocialAuth.getPlatformConfig
+import com.sun.auth.social.NoTokenGeneratedException
+import com.sun.auth.social.SocialAuth.getSocialConfig
 import com.sun.auth.social.SocialAuthApiException
 import com.sun.auth.social.SocialCancelAuthException
 import com.sun.auth.social.callback.SocialAuthSignInCallback
@@ -33,15 +34,12 @@ internal class GoogleAuth(
 
     private val signInClient: SignInClient by lazy { Identity.getSignInClient(activity) }
     private var signInLauncher: ActivityResultLauncher<IntentSenderRequest>? = null
-    private val config: GoogleConfig by lazy { getPlatformConfig(SocialType.GOOGLE) as GoogleConfig }
+    private val config: GoogleConfig by lazy { getSocialConfig(SocialType.GOOGLE) as GoogleConfig }
 
-    init {
+    override fun onCreate(owner: LifecycleOwner) {
         if (config.enableOneTapSignIn && firebaseAuth.currentUser == null) {
             showOneTapSignIn()
         }
-    }
-
-    override fun onCreate(owner: LifecycleOwner) {
         signInLauncher = activity?.activityResultRegistry?.register(
             REQUEST_GOOGLE_SIGN_IN,
             owner,
@@ -105,10 +103,6 @@ internal class GoogleAuth(
         }.addOnFailureListener {
             signOutCallback?.onResult(SocialAuthApiException(it))
         }
-    }
-
-    override fun revokeAccess() {
-        // Do nothing
     }
 
     private fun launchSignIn(pendingIntent: PendingIntent) {

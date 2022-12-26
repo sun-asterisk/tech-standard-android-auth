@@ -16,4 +16,11 @@
     <string name="sample_password">abcd1234</string>
     <string name="credentials_auth">Credentials Auth</string>
     <string name="google_auth">Google Auth</string>
+    <string name="facebook_auth">Facebook Auth</string>
+    <string name="facebook_app_id">896126228412582</string>
+    <string name="facebook_app_secret">b11bf8b42dd83941938ca3ac321591da</string>
+    <string name="fb_login_protocol_scheme">fb896126228412582</string>
+    <string name="facebook_client_token">62377fca6b9a9fe1eb9fac85d9269e0b</string>
+    <string name="oauth_redirect_uri">https://nfcsamples-1572435748482.firebaseapp.com/__/auth/handler</string>
+
 </resources>

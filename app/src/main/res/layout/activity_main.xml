@@ -21,4 +21,12 @@
         android:layout_marginTop="10dp"
         android:text="@string/google_auth" />
 
+    <Button
+        android:id="@+id/facebook"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/facebook_auth" />
+
+
 </androidx.appcompat.widget.LinearLayoutCompat>

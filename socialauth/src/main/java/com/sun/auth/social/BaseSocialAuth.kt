@@ -28,5 +28,4 @@ internal abstract class BaseSocialAuth(
     abstract fun isSignedIn(): Boolean
     abstract fun signOut(clearToken: Boolean)
     abstract fun getUser(): SocialUser?
-    abstract fun revokeAccess()
 }
