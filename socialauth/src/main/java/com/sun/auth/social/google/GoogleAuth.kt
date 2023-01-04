@@ -7,14 +7,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.GetSignInIntentRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.sun.auth.social.BaseSocialAuth
 import com.sun.auth.social.NoTokenGeneratedException
@@ -23,6 +21,7 @@ import com.sun.auth.social.SocialAuthApiException
 import com.sun.auth.social.SocialCancelAuthException
 import com.sun.auth.social.callback.SocialAuthSignInCallback
 import com.sun.auth.social.callback.SocialAuthSignOutCallback
+import com.sun.auth.social.model.PROVIDER_GOOGLE
 import com.sun.auth.social.model.SocialType
 import com.sun.auth.social.model.SocialUser
 
@@ -30,7 +29,7 @@ internal class GoogleAuth(
     activity: FragmentActivity,
     signInCallback: SocialAuthSignInCallback?,
     signOutCallback: SocialAuthSignOutCallback?
-) : BaseSocialAuth(activity, signInCallback, signOutCallback), DefaultLifecycleObserver {
+) : BaseSocialAuth(activity, signInCallback, signOutCallback) {
 
     private val signInClient: SignInClient by lazy { Identity.getSignInClient(activity) }
     private var signInLauncher: ActivityResultLauncher<IntentSenderRequest>? = null
@@ -89,11 +88,22 @@ internal class GoogleAuth(
     }
 
     override fun isSignedIn(): Boolean {
-        return firebaseAuth.currentUser != null
+        if (!config.enableLinkAccounts) {
+            // different firebase users
+            return getUser() != null
+        }
+        return firebaseAuth.currentUser != null // same firebase user
     }
 
-    override fun getUser(): SocialUser {
-        return SocialUser(SocialType.GOOGLE, firebaseAuth.currentUser)
+    override fun getUser(): SocialUser? {
+        val users = firebaseAuth.currentUser?.providerData
+        if (users.isNullOrEmpty()) return null
+        for (user in users) {
+            if (user.providerId.lowercase() == PROVIDER_GOOGLE) {
+                return SocialUser(type = SocialType.GOOGLE, firebaseUser = firebaseAuth.currentUser)
+            }
+        }
+        return null
     }
 
     override fun signOut(clearToken: Boolean) {
@@ -115,24 +125,13 @@ internal class GoogleAuth(
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
-        // Got an ID token from Google. Use it to authenticate with Firebase.
+        // Got an ID token from Google. Use it to authenticate or link with other account from Firebase.
         val credential = GoogleAuthProvider.getCredential(idToken, null)
-        firebaseAuth.signInWithCredential(credential)
-            .addOnSuccessListener { data ->
-                signInCallback?.onResult(
-                    user = SocialUser(type = SocialType.GOOGLE, user = data.user),
-                    error = null
-                )
-            }.addOnFailureListener {
-                if (it is FirebaseAuthInvalidCredentialsException) {
-                    signInCallback?.onResult(
-                        user = null,
-                        error = SocialAuthApiException(ModifiedDateTimeException())
-                    )
-                } else {
-                    signInCallback?.onResult(user = null, error = SocialAuthApiException(it))
-                }
-            }
+        if (!isSignedIn() || !config.enableLinkAccounts) {
+            signInWithFirebase(SocialType.GOOGLE, credential)
+        } else {
+            linkWithCurrentAccount(SocialType.GOOGLE, credential)
+        }
     }
 
     private fun showOneTapSignIn() {
@@ -152,7 +151,6 @@ internal class GoogleAuth(
             .addOnFailureListener {
                 signInCallback?.onResult(user = null, error = SocialAuthApiException(it))
             }
-
     }
 
     companion object {

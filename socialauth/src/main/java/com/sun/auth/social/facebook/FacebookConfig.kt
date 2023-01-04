@@ -55,7 +55,7 @@ class FacebookConfig : SocialConfig() {
 
             FacebookSdk.setAutoLogAppEventsEnabled(config.enableAppEvent)
             // Even if this method is deprecated, it needs for library,
-            FacebookSdk.sdkInitialize(context)
+            FacebookSdk.sdkInitialize(context.applicationContext)
             return config
         }
     }

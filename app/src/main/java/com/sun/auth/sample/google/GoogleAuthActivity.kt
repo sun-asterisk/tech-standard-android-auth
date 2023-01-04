@@ -36,6 +36,9 @@ class GoogleAuthActivity : AppCompatActivity() {
         binding.signOut.setOnClickListener {
             googleAuthViewModel.logout()
         }
+        binding.linkAccount.setOnClickListener {
+            googleAuthViewModel.signIn()
+        }
     }
 
     private fun initData() {
@@ -73,7 +76,13 @@ class GoogleAuthActivity : AppCompatActivity() {
 
     private fun switchUi() {
         if (googleAuthViewModel.isLoggedIn()) {
-            binding.tvId.text = "Welcome: ${googleAuthViewModel.getUser()?.user?.email}"
+            val providerData = googleAuthViewModel.getUser()?.firebaseUser?.providerData ?: return
+            for (data in providerData) {
+                if (data.providerId == "google.com") {
+                    binding.tvId.text = "Welcome: ${data.email}"
+                    break
+                }
+            }
             binding.signInGroup.visibility = View.GONE
             binding.mainGroup.visibility = View.VISIBLE
         } else {

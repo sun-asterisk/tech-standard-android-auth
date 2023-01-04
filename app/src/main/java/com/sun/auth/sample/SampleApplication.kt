@@ -35,7 +35,7 @@ class SampleApplication : Application() {
                 appId = getString(R.string.facebook_app_id),
                 clientToken = getString(R.string.facebook_client_token)
             ) {
-                readPermissions = listOf("public_profile")
+                readPermissions = listOf("email", "public_profile")
                 enableAppEvent = false
             }
         }

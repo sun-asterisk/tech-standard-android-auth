@@ -35,7 +35,7 @@ class ConfigBuilder internal constructor(private val context: Context) {
     }
 
     /**
-     * Config for google signIn.
+     * Config for facebook signIn.
      * @param appId The Facebook application Id, [follow this guide](https://firebase.google.com/docs/auth/android/facebook-login#before_you_begin)
      * @param clientToken The Facebook client token, [follow this guide](https://firebase.google.com/docs/auth/android/facebook-login#before_you_begin)
      * @param setup Other Facebook optional configurations.

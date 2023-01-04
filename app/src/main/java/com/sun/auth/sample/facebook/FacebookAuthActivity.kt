@@ -67,7 +67,13 @@ class FacebookAuthActivity : AppCompatActivity() {
 
     private fun switchUi() {
         if (facebookAuthViewModel.isLoggedIn()) {
-            binding.tvId.text = "Welcome: ${facebookAuthViewModel.getUser()?.user?.email}"
+            val providerData = facebookAuthViewModel.getUser()?.firebaseUser?.providerData ?: return
+            for (data in providerData) {
+                if (data.providerId == "facebook.com") {
+                    binding.tvId.text = "Welcome: ${data.email}"
+                    break
+                }
+            }
             binding.signInGroup.visibility = View.GONE
             binding.mainGroup.visibility = View.VISIBLE
         } else {

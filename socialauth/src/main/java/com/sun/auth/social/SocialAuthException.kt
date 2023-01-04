@@ -8,7 +8,7 @@ abstract class SocialAuthException(originalThrowable: Throwable?) :
     RuntimeException(originalThrowable)
 
 /**
- * This exception occurs when Google token id is not generated. Try to sign in again.
+ * This exception occurs when Provider token id is not generated. Try to sign in again.
  */
 class NoTokenGeneratedException : SocialAuthException(null)
 

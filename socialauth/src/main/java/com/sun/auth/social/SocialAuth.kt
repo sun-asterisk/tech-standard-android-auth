@@ -56,6 +56,9 @@ object SocialAuth {
         signInCallback: SocialAuthSignInCallback?,
         signOutCallback: SocialAuthSignOutCallback?,
     ) {
+        check(!activity.isFinishing) {
+            "The FragmentActivity is currently unavailable!"
+        }
         check(configMap.isNotEmpty()) {
             "You must call initSocialAuth first!"
         }
