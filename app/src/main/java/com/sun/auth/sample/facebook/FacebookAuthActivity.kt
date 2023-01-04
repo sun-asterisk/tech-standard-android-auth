@@ -1,4 +1,4 @@
-package com.sun.auth.sample.google
+package com.sun.auth.sample.facebook
 
 import android.os.Bundle
 import android.view.View
@@ -6,20 +6,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.sun.auth.sample.ViewModelFactory
-import com.sun.auth.sample.databinding.ActivityGoogleAuthBinding
-import com.sun.auth.social.google.ModifiedDateTimeException
+import com.sun.auth.sample.databinding.ActivityFacebookAuthBinding
 
-class GoogleAuthActivity : AppCompatActivity() {
-
-    private val googleAuthViewModel: GoogleAuthViewModel by lazy {
+class FacebookAuthActivity : AppCompatActivity() {
+    private val facebookAuthViewModel: FacebookAuthViewModel by lazy {
         ViewModelProvider(this, ViewModelFactory())
-            .get(GoogleAuthViewModel::class.java)
+            .get(FacebookAuthViewModel::class.java)
     }
-    private lateinit var binding: ActivityGoogleAuthBinding
+    private lateinit var binding: ActivityFacebookAuthBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityGoogleAuthBinding.inflate(layoutInflater)
+        binding = ActivityFacebookAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         initData()
@@ -30,38 +28,31 @@ class GoogleAuthActivity : AppCompatActivity() {
     private fun setupViews() {
         switchUi()
         binding.signIn.setOnClickListener {
-            googleAuthViewModel.signIn()
+            facebookAuthViewModel.signIn()
         }
 
         binding.signOut.setOnClickListener {
-            googleAuthViewModel.logout()
-        }
-        binding.linkAccount.setOnClickListener {
-            googleAuthViewModel.signIn()
+            facebookAuthViewModel.logout()
         }
     }
 
     private fun initData() {
-        googleAuthViewModel.initGoogleSignIn(this)
+        facebookAuthViewModel.initFacebookSignIn(this)
     }
 
     private fun observes() {
-        googleAuthViewModel.apply {
-            signInState.observe(this@GoogleAuthActivity) {
+        facebookAuthViewModel.apply {
+            signInState.observe(this@FacebookAuthActivity) {
                 if (it.exception != null) {
-                    if (it.exception is ModifiedDateTimeException) {
-                        displayMessage("Your datetime is changed, please correct!")
-                    } else {
-                        displayMessage("SignIn error ${it.exception.message ?: "Cancelled"}")
-                    }
+                    displayMessage("SignIn error ${it.exception.message.orEmpty()}")
                 } else {
                     displayMessage("SignIn success")
                 }
                 switchUi()
             }
-            signOutState.observe(this@GoogleAuthActivity) {
+            signOutState.observe(this@FacebookAuthActivity) {
                 if (it != null) {
-                    displayMessage("SignOut error ${it.message}")
+                    displayMessage("SignOut error ${it.message.orEmpty()}")
                 } else {
                     displayMessage("SignOut success")
                 }
@@ -75,10 +66,10 @@ class GoogleAuthActivity : AppCompatActivity() {
     }
 
     private fun switchUi() {
-        if (googleAuthViewModel.isLoggedIn()) {
-            val providerData = googleAuthViewModel.getUser()?.firebaseUser?.providerData ?: return
+        if (facebookAuthViewModel.isLoggedIn()) {
+            val providerData = facebookAuthViewModel.getUser()?.firebaseUser?.providerData ?: return
             for (data in providerData) {
-                if (data.providerId == "google.com") {
+                if (data.providerId == "facebook.com") {
                     binding.tvId.text = "Welcome: ${data.email}"
                     break
                 }

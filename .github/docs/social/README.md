@@ -5,6 +5,7 @@ like:
 
 - SignIn with Social accounts, currently support:
     - [Google](google/README.md)
+    - [Facebook](facebook/README.md)
     -
 - Local check you are Signed in or not.
 - Gets the current Signed user.
@@ -16,4 +17,4 @@ See what social authentication type you want to integrate
 
 ### [1. Google Authentication](google/README.md)
 
-###
+### [2. Facebook Authentication](facebook/README.md)

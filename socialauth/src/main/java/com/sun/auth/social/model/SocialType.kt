@@ -7,5 +7,6 @@ import java.io.Serializable
  * @param configName The name of corresponding configuration class.
  */
 enum class SocialType(val configName: String) : Serializable {
-    GOOGLE(configName = "GoogleConfig")
+    GOOGLE(configName = "GoogleConfig"),
+    FACEBOOK(configName = "FacebookConfig")
 }

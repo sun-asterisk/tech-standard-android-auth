@@ -18,47 +18,56 @@ object SocialAuth {
 
     /**
      * Init the social authentication with callbacks.
+     * @param types The [SocialType]s.
      * @param fragment The current [Fragment].
      * @param signInCallback The sign in callback.
      * @param signOutCallback The sign out callback.
      */
     @JvmStatic
     fun initialize(
+        vararg types: SocialType,
         fragment: Fragment,
         signInCallback: SocialAuthSignInCallback?,
-        signOutCallback: SocialAuthSignOutCallback?
-    ) {
+        signOutCallback: SocialAuthSignOutCallback?,
+
+        ) {
         check(fragment.activity == null || fragment.activity?.isFinishing == true) {
             "The FragmentActivity this fragment is currently associated with is unavailable!"
         }
-        initialize(fragment.requireActivity(), signInCallback, signOutCallback)
+        initialize(
+            types = types,
+            activity = fragment.requireActivity(),
+            signInCallback = signInCallback,
+            signOutCallback = signOutCallback
+        )
     }
 
     /**
      * Init the social authentication with callbacks.
+     * @param types The [SocialType]s.
      * @param activity The current [FragmentActivity].
      * @param signInCallback The sign in callback.
      * @param signOutCallback The sign out callback.
      */
     @JvmStatic
     fun initialize(
+        vararg types: SocialType,
         activity: FragmentActivity,
         signInCallback: SocialAuthSignInCallback?,
-        signOutCallback: SocialAuthSignOutCallback?
+        signOutCallback: SocialAuthSignOutCallback?,
     ) {
+        check(!activity.isFinishing) {
+            "The FragmentActivity is currently unavailable!"
+        }
         check(configMap.isNotEmpty()) {
             "You must call initSocialAuth first!"
         }
-
-        configMap.mapKeys { entry ->
-            authMap.put(
-                key = entry.key,
-                value = socialAuthFactory.buildSocialAuth(
-                    type = entry.key,
-                    activity = activity,
-                    signInCallback = signInCallback,
-                    signOutCallback = signOutCallback
-                )
+        for (type in types) {
+            authMap[type] = socialAuthFactory.buildSocialAuth(
+                type = type,
+                activity = activity,
+                signInCallback = signInCallback,
+                signOutCallback = signOutCallback
             )
         }
     }
@@ -108,7 +117,7 @@ object SocialAuth {
         configMap.putAll(typeMap)
     }
 
-    internal fun getPlatformConfig(type: SocialType): SocialConfig {
+    internal fun getSocialConfig(type: SocialType): SocialConfig {
         check(configMap.containsKey(type)) {
             "You must setup ${type.configName} first!"
         }

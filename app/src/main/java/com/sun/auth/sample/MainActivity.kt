@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.sun.auth.sample.credentials.CredentialAuthActivity
 import com.sun.auth.sample.databinding.ActivityMainBinding
+import com.sun.auth.sample.facebook.FacebookAuthActivity
 import com.sun.auth.sample.google.GoogleAuthActivity
 
 class MainActivity : AppCompatActivity() {
@@ -22,6 +23,9 @@ class MainActivity : AppCompatActivity() {
         }
         binding.google.setOnClickListener {
             navigateTo(GoogleAuthActivity::class.java)
+        }
+        binding.facebook.setOnClickListener {
+            navigateTo(FacebookAuthActivity::class.java)
         }
     }
 

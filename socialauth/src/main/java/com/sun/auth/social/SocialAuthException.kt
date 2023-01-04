@@ -8,6 +8,11 @@ abstract class SocialAuthException(originalThrowable: Throwable?) :
     RuntimeException(originalThrowable)
 
 /**
+ * This exception occurs when Provider token id is not generated. Try to sign in again.
+ */
+class NoTokenGeneratedException : SocialAuthException(null)
+
+/**
  * This exception occurs when User cancel to sign in.
  */
 class SocialCancelAuthException : SocialAuthException(null)

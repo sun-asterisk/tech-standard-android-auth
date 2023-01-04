@@ -24,7 +24,7 @@ initSocialAuth {
 }
 ```
 
-#### 1.2 Call it separatedly (only use Google Auth)
+#### 1.2 Call it separately (only use Google Auth)
 
 ```kt
 initGoogleAuth(getString(R.string.google_web_client_id)) {
