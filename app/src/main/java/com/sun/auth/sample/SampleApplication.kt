@@ -68,6 +68,7 @@ class SampleApplication : Application() {
             ) {
                 readPermissions = listOf("email", "public_profile")
                 enableAppEvent = false
+                useFacebookLoginButton = true
             }
         }
         /*

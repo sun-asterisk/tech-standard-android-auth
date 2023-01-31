@@ -7,6 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.sun.auth.sample.ViewModelFactory
 import com.sun.auth.sample.databinding.ActivityFacebookAuthBinding
+import com.sun.auth.social.SocialAuth
+import com.sun.auth.social.facebook.FacebookAuth
+import com.sun.auth.social.model.SocialType
 
 class FacebookAuthActivity : AppCompatActivity() {
     private val facebookAuthViewModel: FacebookAuthViewModel by lazy {
@@ -30,7 +33,8 @@ class FacebookAuthActivity : AppCompatActivity() {
         binding.signIn.setOnClickListener {
             facebookAuthViewModel.signIn()
         }
-
+        SocialAuth.getAuth<FacebookAuth>(SocialType.FACEBOOK)
+            ?.setLoginButton(binding.facebookSignIn)
         binding.signOut.setOnClickListener {
             facebookAuthViewModel.logout()
         }

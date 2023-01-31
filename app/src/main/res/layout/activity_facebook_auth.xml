@@ -7,10 +7,11 @@
     android:padding="@dimen/activity_horizontal_margin"
     tools:context=".google.GoogleAuthActivity">
 
-    <FrameLayout
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/signInGroup"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:visibility="visible">
 
         <Button
@@ -20,7 +21,14 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="30dp"
             android:text="@string/facebook_auth" />
-    </FrameLayout>
+
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/facebookSignIn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="30dp" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/mainGroup"
@@ -28,7 +36,7 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:visibility="visible">
+        tools:visibility="visible">
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tvId"

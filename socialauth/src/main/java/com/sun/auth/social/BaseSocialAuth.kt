@@ -15,7 +15,7 @@ import com.sun.auth.social.model.SocialType
 import com.sun.auth.social.model.SocialUser
 import com.sun.auth.social.utils.weak
 
-internal abstract class BaseSocialAuth(
+abstract class BaseSocialAuth internal constructor(
     childActivity: FragmentActivity,
     protected val signInCallback: SocialAuthSignInCallback? = null,
     protected val signOutCallback: SocialAuthSignOutCallback? = null
