@@ -1,4 +1,4 @@
-package com.sun.auth.sample.credentials
+package com.sun.auth.sample.credentials.suntech
 
 /**
  * Data validation state of the signIn form.

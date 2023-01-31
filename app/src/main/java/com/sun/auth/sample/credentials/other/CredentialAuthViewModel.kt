@@ -1,4 +1,4 @@
-package com.sun.auth.sample.credentials
+package com.sun.auth.sample.credentials.other
 
 import android.util.Patterns
 import androidx.lifecycle.LiveData

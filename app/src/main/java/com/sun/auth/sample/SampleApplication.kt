@@ -4,7 +4,8 @@ import android.app.Application
 import com.google.gson.JsonObject
 import com.sun.auth.credentials.CredentialsAuth
 import com.sun.auth.credentials.results.AuthTokenChanged
-import com.sun.auth.sample.credentials.Token
+import com.sun.auth.sample.credentials.other.Token
+import com.sun.auth.sample.credentials.suntech.SunToken
 import com.sun.auth.social.initSocialAuth
 import okhttp3.MultipartBody
 import okhttp3.Request
@@ -13,6 +14,13 @@ import okhttp3.RequestBody.Companion.toRequestBody
 class SampleApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+
+//        setupCredentialAuth()
+        setupSocialAuth()
+        setupSunTechAuth()
+    }
+
+    private fun setupCredentialAuth() {
         CredentialsAuth.Builder()
             .context(applicationContext)
             .signInUrl(url = "https://your.url/api/v1/users/sign_in")
@@ -25,7 +33,30 @@ class SampleApplication : Application() {
                 }
             })
             .build()
+    }
 
+    private fun buildRefreshTokenRequest(token: Token?): Request {
+        val json = JsonObject().apply {
+            addProperty("refresh_token", token?.crRefreshToken.orEmpty())
+        }
+        val body = json.toString().toRequestBody(CredentialsAuth.JSON_MEDIA_TYPE)
+        return Request.Builder()
+            .url("https://your.url/api/v1/auth_tokens")
+            //  .put("{refresh_token: ${token?.crRefreshToken.orEmpty()}}".toRequestBody(CredentialsAuth.JSON_MEDIA_TYPE))
+            //  .post("{refresh_token: ${token?.crRefreshToken.orEmpty()}}".toRequestBody(CredentialsAuth.JSON_MEDIA_TYPE))
+            //  .put(body)
+            .patch(
+                MultipartBody.Builder().addPart(
+                    MultipartBody.Part.createFormData(
+                        "refresh_token",
+                        token?.crRefreshToken.orEmpty()
+                    )
+                ).build()
+            )
+            .build()
+    }
+
+    private fun setupSocialAuth() {
         initSocialAuth {
             google(getString(R.string.google_web_client_id)) {
                 enableOneTapSignIn = true
@@ -47,24 +78,28 @@ class SampleApplication : Application() {
         */
     }
 
-    private fun buildRefreshTokenRequest(token: Token?): Request {
+    private fun setupSunTechAuth() {
+        CredentialsAuth.Builder()
+            .context(applicationContext)
+            .signInUrl(url = "http://10.0.5.78:8001/api/login")
+            .authTokenClazz(SunToken::class.java)
+            .authTokenChanged(object : AuthTokenChanged<SunToken> {
+                // do this when you want to refresh token automatically
+                override fun onTokenUpdate(token: SunToken?): Request {
+                    return buildSunTechRefreshTokenRequest(token)
+                }
+            })
+            .build()
+    }
+
+    private fun buildSunTechRefreshTokenRequest(token: SunToken?): Request {
         val json = JsonObject().apply {
             addProperty("refresh_token", token?.crRefreshToken.orEmpty())
         }
         val body = json.toString().toRequestBody(CredentialsAuth.JSON_MEDIA_TYPE)
         return Request.Builder()
-            .url("https://your.url/api/v1/auth_tokens")
-            //  .put("{refresh_token: ${token?.crRefreshToken.orEmpty()}}".toRequestBody(CredentialsAuth.JSON_MEDIA_TYPE))
-            //  .post("{refresh_token: ${token?.crRefreshToken.orEmpty()}}".toRequestBody(CredentialsAuth.JSON_MEDIA_TYPE))
-            //  .put(body)
-            .patch(
-                MultipartBody.Builder().addPart(
-                    MultipartBody.Part.createFormData(
-                        "refresh_token",
-                        token?.crRefreshToken.orEmpty()
-                    )
-                ).build()
-            )
+            .url("http://10.0.5.78:8001/api/refresh")
+            .post(body)
             .build()
     }
 }
