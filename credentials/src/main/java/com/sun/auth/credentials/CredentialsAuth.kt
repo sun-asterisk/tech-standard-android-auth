@@ -171,11 +171,9 @@ class CredentialsAuth private constructor(private val builder: Builder) {
                 .readTimeout(builder.readTimeout, TimeUnit.MILLISECONDS)
                 .writeTimeout(builder.writeTimeout, TimeUnit.MILLISECONDS)
                 .build()
-
         }
         return client!!
     }
-
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : AuthToken> authTokenClazz(): Class<T> {

@@ -11,10 +11,10 @@ internal interface SharedPrefApi {
     fun clear()
 
     fun registerOnSharedPreferenceChangeListener(
-        listener: SharedPreferences.OnSharedPreferenceChangeListener
+        listener: SharedPreferences.OnSharedPreferenceChangeListener,
     )
 
     fun unregisterOnSharedPreferenceChangeListener(
-        listener: SharedPreferences.OnSharedPreferenceChangeListener
+        listener: SharedPreferences.OnSharedPreferenceChangeListener,
     )
 }

@@ -6,7 +6,7 @@ import com.sun.auth.credentials.repositories.AuthRepositoryImpl
 import com.sun.auth.credentials.repositories.local.AuthLocalDataSource
 import com.sun.auth.credentials.repositories.model.AuthToken
 import com.sun.auth.credentials.repositories.remote.AuthRemoteDataSource
-import io.mockk.*
+import io.mockk.* // ktlint-disable no-wildcard-imports
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.runBlocking
@@ -40,7 +40,7 @@ class AuthRepositoryImplTest : BaseUnitTest() {
             authRepositoryImpl.signIn(
                 url = "",
                 requestBody = "",
-                responseClazz = AuthToken::class.java
+                responseClazz = AuthToken::class.java,
             )
         }
         verifyOrder {

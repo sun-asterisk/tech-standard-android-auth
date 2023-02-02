@@ -12,20 +12,20 @@ internal class SocialAuthFactory {
         type: SocialType,
         activity: FragmentActivity,
         signInCallback: SocialAuthSignInCallback? = null,
-        signOutCallback: SocialAuthSignOutCallback? = null
+        signOutCallback: SocialAuthSignOutCallback? = null,
     ): BaseSocialAuth {
         return when (type) {
             SocialType.GOOGLE -> GoogleAuth(
                 activity = activity,
                 signInCallback = signInCallback,
-                signOutCallback = signOutCallback
+                signOutCallback = signOutCallback,
             ).apply {
                 activity.lifecycle.addObserver(this)
             }
             SocialType.FACEBOOK -> FacebookAuth(
                 activity = activity,
                 signInCallback = signInCallback,
-                signOutCallback = signOutCallback
+                signOutCallback = signOutCallback,
             ).apply {
                 activity.lifecycle.addObserver(this)
             }

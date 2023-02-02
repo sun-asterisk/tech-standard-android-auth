@@ -7,7 +7,7 @@ internal interface AuthRepository {
     suspend fun <T : AuthToken> signIn(url: String, requestBody: Any?, responseClazz: Class<T>): T?
     suspend fun <T : AuthToken> refreshToken(
         request: Call,
-        responseClazz: Class<T>
+        responseClazz: Class<T>,
     ): T?
 
     fun <T : AuthToken> saveToken(token: T)

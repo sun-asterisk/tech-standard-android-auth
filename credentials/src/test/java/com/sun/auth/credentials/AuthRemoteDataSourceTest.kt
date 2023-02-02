@@ -4,7 +4,7 @@ import com.sun.auth.base.BaseUnitTest
 import com.sun.auth.credentials.repositories.remote.AuthRemoteDataSource
 import com.sun.auth.credentials.repositories.remote.NonAuthApi
 import com.sun.auth.credentials.utils.call
-import io.mockk.*
+import io.mockk.* // ktlint-disable no-wildcard-imports
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import okhttp3.Call

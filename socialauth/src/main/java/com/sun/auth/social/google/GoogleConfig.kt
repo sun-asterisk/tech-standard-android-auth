@@ -22,7 +22,7 @@ class GoogleConfig : SocialConfig() {
     companion object {
         internal fun apply(
             clientId: String,
-            setup: ConfigFunction<GoogleConfig>? = null
+            setup: ConfigFunction<GoogleConfig>? = null,
         ): GoogleConfig {
             val config = GoogleConfig().apply { webClientId = clientId }
             setup?.invoke(config)

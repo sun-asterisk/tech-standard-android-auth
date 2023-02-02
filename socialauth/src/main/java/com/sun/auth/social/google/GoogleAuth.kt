@@ -28,7 +28,7 @@ import com.sun.auth.social.model.SocialUser
 internal class GoogleAuth(
     activity: FragmentActivity,
     signInCallback: SocialAuthSignInCallback?,
-    signOutCallback: SocialAuthSignOutCallback?
+    signOutCallback: SocialAuthSignOutCallback?,
 ) : BaseSocialAuth(activity, signInCallback, signOutCallback) {
 
     private val signInClient: SignInClient by lazy { Identity.getSignInClient(activity) }
@@ -42,7 +42,7 @@ internal class GoogleAuth(
         signInLauncher = activity?.activityResultRegistry?.register(
             REQUEST_GOOGLE_SIGN_IN,
             owner,
-            ActivityResultContracts.StartIntentSenderForResult()
+            ActivityResultContracts.StartIntentSenderForResult(),
         ) { result ->
             handleSignInResult(result)
         }
@@ -141,7 +141,7 @@ internal class GoogleAuth(
                     .setSupported(true)
                     .setServerClientId(config.webClientId)
                     .setFilterByAuthorizedAccounts(config.enableFilterByAuthorizedAccounts)
-                    .build()
+                    .build(),
             ).build()
 
         signInClient.beginSignIn(oneTapSignInRequest)

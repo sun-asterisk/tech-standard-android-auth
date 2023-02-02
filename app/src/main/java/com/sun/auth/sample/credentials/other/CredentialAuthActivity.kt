@@ -34,21 +34,24 @@ class CredentialAuthActivity : AppCompatActivity() {
         switchUi()
         binding.username.afterTextChanged {
             credentialAuthViewModel.signInDataChanged(
-                binding.username.text.toString(), binding.password.text.toString()
+                binding.username.text.toString(),
+                binding.password.text.toString(),
             )
         }
 
         binding.password.apply {
             afterTextChanged {
                 credentialAuthViewModel.signInDataChanged(
-                    binding.username.text.toString(), binding.password.text.toString()
+                    binding.username.text.toString(),
+                    binding.password.text.toString(),
                 )
             }
 
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
                     EditorInfo.IME_ACTION_DONE -> credentialAuthViewModel.signIn(
-                        binding.username.text.toString(), binding.password.text.toString()
+                        binding.username.text.toString(),
+                        binding.password.text.toString(),
                     )
                 }
                 false
@@ -57,10 +60,10 @@ class CredentialAuthActivity : AppCompatActivity() {
             binding.signIn.setOnClickListener {
                 binding.loading.visibility = View.VISIBLE
                 credentialAuthViewModel.signIn(
-                    binding.username.text.toString(), binding.password.text.toString()
+                    binding.username.text.toString(),
+                    binding.password.text.toString(),
                 )
             }
-
         }
 
         binding.signOut.setOnClickListener {

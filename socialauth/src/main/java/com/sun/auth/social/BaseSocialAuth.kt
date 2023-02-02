@@ -18,7 +18,7 @@ import com.sun.auth.social.utils.weak
 abstract class BaseSocialAuth internal constructor(
     childActivity: FragmentActivity,
     protected val signInCallback: SocialAuthSignInCallback? = null,
-    protected val signOutCallback: SocialAuthSignOutCallback? = null
+    protected val signOutCallback: SocialAuthSignOutCallback? = null,
 ) : DefaultLifecycleObserver {
 
     protected var activity: FragmentActivity? by weak(null)
@@ -41,9 +41,9 @@ abstract class BaseSocialAuth internal constructor(
                     user = SocialUser(
                         type = type,
                         firebaseUser = data.user,
-                        additionalUserInfo = data.additionalUserInfo
+                        additionalUserInfo = data.additionalUserInfo,
                     ),
-                    error = null
+                    error = null,
                 )
             }?.addOnFailureListener { error ->
                 if (error is FirebaseAuthUserCollisionException) {
@@ -61,15 +61,15 @@ abstract class BaseSocialAuth internal constructor(
                     user = SocialUser(
                         type = type,
                         firebaseUser = data.user,
-                        additionalUserInfo = data.additionalUserInfo
+                        additionalUserInfo = data.additionalUserInfo,
                     ),
-                    error = null
+                    error = null,
                 )
             }.addOnFailureListener {
                 if (it is FirebaseAuthInvalidCredentialsException) {
                     signInCallback?.onResult(
                         user = null,
-                        error = SocialAuthApiException(ModifiedDateTimeException())
+                        error = SocialAuthApiException(ModifiedDateTimeException()),
                     )
                 } else {
                     signInCallback?.onResult(user = null, error = SocialAuthApiException(it))

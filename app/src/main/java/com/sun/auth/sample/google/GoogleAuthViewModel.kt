@@ -47,6 +47,7 @@ class GoogleAuthViewModel : ViewModel() {
                 override fun onResult(error: Throwable?) {
                     _signOutState.value = error
                 }
-            })
+            },
+        )
     }
 }
