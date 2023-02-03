@@ -4,7 +4,7 @@ package com.sun.auth.social
  * Base Class of the error when authenticate with given info.
  * @param originalThrowable The origin error.
  */
-abstract class SocialAuthException(originalThrowable: Throwable?) :
+open class SocialAuthException(originalThrowable: Throwable?) :
     RuntimeException(originalThrowable)
 
 /**

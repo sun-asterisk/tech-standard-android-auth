@@ -32,7 +32,7 @@ else
 fi
 
 echo "Start running unit test"
-./gradlew testDebugUnitTestCoverage --daemon
+./gradlew testDebugUnitTest --daemon
 status3=$?
 if [[ "$status3" = 0 ]] ; then
     echo "*******************************************************"
