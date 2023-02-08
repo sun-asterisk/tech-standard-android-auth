@@ -1,4 +1,4 @@
-package com.sun.auth.sample.credentials
+package com.sun.auth.sample.credentials.other
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName

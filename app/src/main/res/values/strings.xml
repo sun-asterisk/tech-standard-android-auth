@@ -15,6 +15,7 @@
     <string name="sample_email">linh@framgia.com</string>
     <string name="sample_password">abcd1234</string>
     <string name="credentials_auth">Credentials Auth</string>
+    <string name="suntech_server">SunTech Server</string>
     <string name="google_auth">Google Auth</string>
     <string name="facebook_auth">Facebook Auth</string>
     <string name="facebook_app_id">896126228412582</string>
@@ -22,5 +23,7 @@
     <string name="fb_login_protocol_scheme">fb896126228412582</string>
     <string name="facebook_client_token">62377fca6b9a9fe1eb9fac85d9269e0b</string>
     <string name="oauth_redirect_uri">https://nfcsamples-1572435748482.firebaseapp.com/__/auth/handler</string>
+    <string name="sample_username_1">user1234</string>
+    <string name="sample_password_1">passwordRequired@123</string>
 
 </resources>
