@@ -18,3 +18,16 @@ See what social authentication type you want to integrate
 ### [1. Google Authentication](google/README.md)
 
 ### [2. Facebook Authentication](facebook/README.md)
+
+## Other Notes:
+
+### To access specific social authentication class
+
+```kt
+SocialAuth.getAuth<GoogleAuth>(type = SocialType.GOOGLE)
+SocialAuth.getAuth<FacebookAuth>(type = SocialType.FACEBOOK)
+```
+
+### Exceptions
+
+`ModifiedDateTimeException`: This exception occurs when User's device time is incorrect.

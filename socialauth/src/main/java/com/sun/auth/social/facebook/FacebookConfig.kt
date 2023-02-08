@@ -31,6 +31,11 @@ class FacebookConfig : SocialConfig() {
      */
     var enableAppEvent = true
 
+    /**
+     * True if use default Facebook LoginButton to login.
+     */
+    var useFacebookLoginButton = false
+
     companion object {
         internal fun apply(
             context: Context,

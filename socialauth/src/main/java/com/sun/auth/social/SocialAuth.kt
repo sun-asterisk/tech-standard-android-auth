@@ -29,8 +29,7 @@ object SocialAuth {
         fragment: Fragment,
         signInCallback: SocialAuthSignInCallback?,
         signOutCallback: SocialAuthSignOutCallback?,
-
-        ) {
+    ) {
         check(fragment.activity == null || fragment.activity?.isFinishing == true) {
             "The FragmentActivity this fragment is currently associated with is unavailable!"
         }
@@ -70,6 +69,13 @@ object SocialAuth {
                 signOutCallback = signOutCallback
             )
         }
+    }
+
+    fun <T : BaseSocialAuth> getAuth(type: SocialType): T? {
+        check(authMap.isNotEmpty()) {
+            "You must call initialize first!"
+        }
+        return authMap[type] as? T
     }
 
     /**

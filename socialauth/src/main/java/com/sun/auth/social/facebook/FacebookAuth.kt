@@ -6,6 +6,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.facebook.*
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import com.facebook.login.widget.LoginButton
 import com.google.firebase.auth.FacebookAuthProvider
 import com.sun.auth.social.*
 import com.sun.auth.social.callback.SocialAuthSignInCallback
@@ -14,7 +15,7 @@ import com.sun.auth.social.model.PROVIDER_FACEBOOK
 import com.sun.auth.social.model.SocialType
 import com.sun.auth.social.model.SocialUser
 
-internal class FacebookAuth(
+class FacebookAuth internal constructor(
     activity: FragmentActivity,
     signInCallback: SocialAuthSignInCallback?,
     signOutCallback: SocialAuthSignOutCallback?
@@ -22,9 +23,8 @@ internal class FacebookAuth(
     private val callbackManager by lazy { CallbackManager.Factory.create() }
     private val facebookInstance by lazy { LoginManager.getInstance() }
     private val config by lazy { SocialAuth.getSocialConfig(SocialType.FACEBOOK) as FacebookConfig }
-
-    init {
-        facebookInstance.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+    private val facebookCallback by lazy {
+        object : FacebookCallback<LoginResult> {
             override fun onSuccess(result: LoginResult) {
                 firebaseAuthWithFacebook(result.accessToken)
             }
@@ -36,22 +36,47 @@ internal class FacebookAuth(
             override fun onError(error: FacebookException) {
                 signInCallback?.onResult(user = null, error = error)
             }
-        })
-        if (config.autoSignIn) {
-            facebookInstance.retrieveLoginStatus(activity, object : LoginStatusCallback {
-                override fun onCompleted(accessToken: AccessToken) {
-                    firebaseAuthWithFacebook(accessToken)
-                }
-
-                override fun onFailure() {
-                    // Do nothing
-                }
-
-                override fun onError(exception: Exception) {
-                    // Do nothing
-                }
-            })
         }
+    }
+    private val facebookLoginStatusCallback by lazy {
+        object : LoginStatusCallback {
+            override fun onCompleted(accessToken: AccessToken) {
+                firebaseAuthWithFacebook(accessToken)
+            }
+
+            override fun onFailure() {
+                // Do nothing
+            }
+
+            override fun onError(exception: Exception) {
+                // Do nothing
+            }
+        }
+    }
+
+    init {
+        if (!config.useFacebookLoginButton) {
+            facebookInstance.registerCallback(callbackManager, facebookCallback)
+        }
+        if (config.autoSignIn) {
+            facebookInstance.retrieveLoginStatus(activity, facebookLoginStatusCallback)
+        }
+    }
+
+    /**
+     * Sets the default LoginButton.
+     */
+    fun setLoginButton(button: LoginButton) {
+        check(config.useFacebookLoginButton) {
+            "Must enable config useFacebookLoginButton first!"
+        }
+        check(button.permissions.isEmpty() && config.readPermissions.isEmpty()) {
+            "Must set config permissions or LoginButton permissions"
+        }
+        if (button.permissions.isEmpty()) {
+            button.permissions = config.readPermissions
+        }
+        button.registerCallback(callbackManager, facebookCallback)
     }
 
     override fun onDestroy(owner: LifecycleOwner) {

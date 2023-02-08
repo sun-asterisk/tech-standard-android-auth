@@ -104,6 +104,13 @@ fun signIn() {
     SocialAuth.signIn(SocialType.FACEBOOK)
 }
 
+// For using Facebook LoginButton
+fun setupViews() {
+    SocialAuth.getAuth<FacebookAuth>(SocialType.FACEBOOK)
+        ?.setLoginButton(binding.facebookSignIn)
+    // other views setup
+}
+
 fun logout() {
     SocialAuth.signOut(SocialType.FACEBOOK)
 }
