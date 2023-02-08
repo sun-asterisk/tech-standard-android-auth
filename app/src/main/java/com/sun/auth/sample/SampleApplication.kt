@@ -49,9 +49,9 @@ class SampleApplication : Application() {
                 MultipartBody.Builder().addPart(
                     MultipartBody.Part.createFormData(
                         "refresh_token",
-                        token?.crRefreshToken.orEmpty()
-                    )
-                ).build()
+                        token?.crRefreshToken.orEmpty(),
+                    ),
+                ).build(),
             )
             .build()
     }
@@ -64,7 +64,7 @@ class SampleApplication : Application() {
             }
             facebook(
                 appId = getString(R.string.facebook_app_id),
-                clientToken = getString(R.string.facebook_client_token)
+                clientToken = getString(R.string.facebook_client_token),
             ) {
                 readPermissions = listOf("email", "public_profile")
                 enableAppEvent = false

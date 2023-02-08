@@ -37,7 +37,7 @@ object SocialAuth {
             types = types,
             activity = fragment.requireActivity(),
             signInCallback = signInCallback,
-            signOutCallback = signOutCallback
+            signOutCallback = signOutCallback,
         )
     }
 
@@ -66,7 +66,7 @@ object SocialAuth {
                 type = type,
                 activity = activity,
                 signInCallback = signInCallback,
-                signOutCallback = signOutCallback
+                signOutCallback = signOutCallback,
             )
         }
     }

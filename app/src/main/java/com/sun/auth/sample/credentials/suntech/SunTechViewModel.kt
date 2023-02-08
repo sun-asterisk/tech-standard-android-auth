@@ -37,7 +37,7 @@ class SunTechViewModel : ViewModel() {
                     override fun failure(exception: AuthException?) {
                         _credentialAuthResult.postValue(SunTechResult(error = exception))
                     }
-                }
+                },
             )
         }
     }
@@ -67,7 +67,8 @@ class SunTechViewModel : ViewModel() {
                     override fun failure(exception: AuthException?) {
                         _refreshTokenResult.postValue(SunTechResult(error = exception))
                     }
-                })
+                },
+            )
         }
     }
 
