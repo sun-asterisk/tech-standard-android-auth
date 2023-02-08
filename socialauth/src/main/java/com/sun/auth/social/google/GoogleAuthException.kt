@@ -1,3 +1,4 @@
+// ktlint-disable filename
 package com.sun.auth.social.google
 
 import com.sun.auth.social.SocialAuthException

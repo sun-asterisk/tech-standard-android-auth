@@ -37,7 +37,7 @@ object SocialAuth {
             types = types,
             activity = fragment.requireActivity(),
             signInCallback = signInCallback,
-            signOutCallback = signOutCallback
+            signOutCallback = signOutCallback,
         )
     }
 
@@ -66,7 +66,7 @@ object SocialAuth {
                 type = type,
                 activity = activity,
                 signInCallback = signInCallback,
-                signOutCallback = signOutCallback
+                signOutCallback = signOutCallback,
             )
         }
     }
@@ -84,7 +84,7 @@ object SocialAuth {
      */
     @JvmStatic
     fun signIn(type: SocialType) {
-        socialAuth(type).signIn()
+        auth(type).signIn()
     }
 
     /**
@@ -94,7 +94,7 @@ object SocialAuth {
      */
     @JvmStatic
     fun signOut(type: SocialType, clearToken: Boolean = false) {
-        socialAuth(type).signOut(clearToken)
+        auth(type).signOut(clearToken)
     }
 
     /**
@@ -104,7 +104,7 @@ object SocialAuth {
      */
     @JvmStatic
     fun isSignedIn(type: SocialType): Boolean {
-        return socialAuth(type).isSignedIn()
+        return auth(type).isSignedIn()
     }
 
     /**
@@ -114,7 +114,7 @@ object SocialAuth {
      */
     @JvmStatic
     fun getUser(type: SocialType): SocialUser? {
-        return socialAuth(type).getUser()
+        return auth(type).getUser()
     }
 
     internal fun initialize(context: Context, typeMap: Map<SocialType, SocialConfig>) {
@@ -130,7 +130,7 @@ object SocialAuth {
         return configMap[type]!!
     }
 
-    private fun socialAuth(type: SocialType): BaseSocialAuth {
+    private fun auth(type: SocialType): BaseSocialAuth {
         checkNotNull(authMap[type]) {
             "You must call initialize(activity) from your activity/fragment first!"
         }

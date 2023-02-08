@@ -37,7 +37,7 @@ class CredentialAuthViewModel : ViewModel() {
                     override fun failure(exception: AuthException?) {
                         _credentialAuthResult.postValue(CredentialAuthResult(error = exception))
                     }
-                }
+                },
             )
         }
     }
@@ -67,7 +67,8 @@ class CredentialAuthViewModel : ViewModel() {
                     override fun failure(exception: AuthException?) {
                         _refreshTokenResult.postValue(CredentialAuthResult(error = exception))
                     }
-                })
+                },
+            )
         }
     }
 
@@ -88,9 +89,9 @@ class CredentialAuthViewModel : ViewModel() {
                 MultipartBody.Builder().addPart(
                     MultipartBody.Part.createFormData(
                         "refresh_token",
-                        getToken()?.crRefreshToken.orEmpty()
-                    )
-                ).build()
+                        getToken()?.crRefreshToken.orEmpty(),
+                    ),
+                ).build(),
             ).build()
     }
 

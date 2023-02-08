@@ -29,7 +29,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-
+@Suppress("TooManyFunctions")
 class CredentialsAuth private constructor(private val builder: Builder) {
     private lateinit var repository: AuthRepository
     private var client: OkHttpClient? = null
@@ -171,11 +171,9 @@ class CredentialsAuth private constructor(private val builder: Builder) {
                 .readTimeout(builder.readTimeout, TimeUnit.MILLISECONDS)
                 .writeTimeout(builder.writeTimeout, TimeUnit.MILLISECONDS)
                 .build()
-
         }
         return client!!
     }
-
 
     @Suppress("UNCHECKED_CAST")
     private fun <T : AuthToken> authTokenClazz(): Class<T> {
@@ -214,7 +212,7 @@ class CredentialsAuth private constructor(private val builder: Builder) {
         }
     }
 
-    @Suppress("UNUSED")
+    @Suppress("UNUSED", "MagicNumber")
     class Builder {
         internal lateinit var context: Context
         internal lateinit var signInUrl: String

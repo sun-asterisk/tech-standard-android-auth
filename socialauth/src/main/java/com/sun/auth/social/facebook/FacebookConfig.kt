@@ -41,7 +41,7 @@ class FacebookConfig : SocialConfig() {
             context: Context,
             appId: String,
             clientToken: String,
-            setup: ConfigFunction<FacebookConfig>? = null
+            setup: ConfigFunction<FacebookConfig>? = null,
         ): FacebookConfig {
             val config = FacebookConfig().apply {
                 this.appId = appId

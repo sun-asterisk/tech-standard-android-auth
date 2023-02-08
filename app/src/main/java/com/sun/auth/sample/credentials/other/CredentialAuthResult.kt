@@ -5,5 +5,5 @@ package com.sun.auth.sample.credentials.other
  */
 data class CredentialAuthResult(
     val success: Token? = null,
-    val error: Exception? = null
+    val error: Exception? = null,
 )

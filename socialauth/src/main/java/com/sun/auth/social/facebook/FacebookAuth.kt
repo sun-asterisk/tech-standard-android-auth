@@ -3,12 +3,12 @@ package com.sun.auth.social.facebook
 import androidx.activity.result.ActivityResult
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
-import com.facebook.*
+import com.facebook.* // ktlint-disable no-wildcard-imports
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
 import com.google.firebase.auth.FacebookAuthProvider
-import com.sun.auth.social.*
+import com.sun.auth.social.* // ktlint-disable no-wildcard-imports
 import com.sun.auth.social.callback.SocialAuthSignInCallback
 import com.sun.auth.social.callback.SocialAuthSignOutCallback
 import com.sun.auth.social.model.PROVIDER_FACEBOOK
@@ -18,7 +18,7 @@ import com.sun.auth.social.model.SocialUser
 class FacebookAuth internal constructor(
     activity: FragmentActivity,
     signInCallback: SocialAuthSignInCallback?,
-    signOutCallback: SocialAuthSignOutCallback?
+    signOutCallback: SocialAuthSignOutCallback?,
 ) : BaseSocialAuth(activity, signInCallback, signOutCallback) {
     private val callbackManager by lazy { CallbackManager.Factory.create() }
     private val facebookInstance by lazy { LoginManager.getInstance() }
@@ -88,7 +88,7 @@ class FacebookAuth internal constructor(
         facebookInstance.logInWithReadPermissions(
             activity!!,
             callbackManager,
-            config.readPermissions
+            config.readPermissions,
         )
     }
 

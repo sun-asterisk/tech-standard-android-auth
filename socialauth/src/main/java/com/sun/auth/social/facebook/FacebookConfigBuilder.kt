@@ -14,7 +14,7 @@ import com.sun.auth.social.utils.invoke
 fun Context.initFacebookAuth(
     appId: String,
     clientToken: String,
-    setup: FacebookConfig.() -> Unit = {}
+    setup: FacebookConfig.() -> Unit = {},
 ) {
     val item = SocialType.FACEBOOK to FacebookConfig.apply(this, appId, clientToken, invoke(setup))
     SocialAuth.initialize(this, mapOf(item))

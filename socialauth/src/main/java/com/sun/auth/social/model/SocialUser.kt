@@ -13,5 +13,5 @@ import com.google.firebase.auth.FirebaseUser
 data class SocialUser(
     val type: SocialType,
     val firebaseUser: FirebaseUser?,
-    val additionalUserInfo: AdditionalUserInfo? = null
+    val additionalUserInfo: AdditionalUserInfo? = null,
 )

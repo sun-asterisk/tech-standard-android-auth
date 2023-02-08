@@ -8,5 +8,5 @@ import java.io.Serializable
  */
 enum class SocialType(val configName: String) : Serializable {
     GOOGLE(configName = "GoogleConfig"),
-    FACEBOOK(configName = "FacebookConfig")
+    FACEBOOK(configName = "FacebookConfig"),
 }

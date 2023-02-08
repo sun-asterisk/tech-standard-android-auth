@@ -1,7 +1,14 @@
+buildscript {
+    apply from: "../ktlint.gradle"
+    apply from: "../detekt.gradle"
+}
+
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
+
+check.dependsOn ktlintFormat
 
 android {
     namespace 'com.sun.auth.social'
@@ -33,13 +40,13 @@ android {
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.0'
+    implementation 'com.google.android.material:material:1.8.0'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 
     api platform('com.google.firebase:firebase-bom:31.1.1')
     api 'com.google.firebase:firebase-auth-ktx'
-    api 'com.google.android.gms:play-services-auth:20.4.0'
+    api 'com.google.android.gms:play-services-auth:20.4.1'
     api 'com.facebook.android:facebook-login:latest.release'
 }

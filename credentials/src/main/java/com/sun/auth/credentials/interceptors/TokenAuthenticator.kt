@@ -5,7 +5,7 @@ import com.sun.auth.credentials.repositories.model.AuthToken
 import com.sun.auth.credentials.utils.BEARER
 import com.sun.auth.credentials.utils.TOKEN_AUTHORIZATION
 import kotlinx.coroutines.runBlocking
-import okhttp3.*
+import okhttp3.* // ktlint-disable no-wildcard-imports
 import retrofit2.HttpException
 
 /**
@@ -20,7 +20,7 @@ import retrofit2.HttpException
  * @param refreshTokenExpiredErrorCode The defined server error code about RefreshToken is expired.
  */
 class TokenAuthenticator<T : AuthToken>(
-    private val refreshTokenExpiredErrorCode: Int = Int.MIN_VALUE
+    private val refreshTokenExpiredErrorCode: Int = Int.MIN_VALUE,
 ) : Authenticator {
     private val auth: CredentialsAuth by lazy { CredentialsAuth.getInstance() }
 
@@ -42,7 +42,9 @@ class TokenAuthenticator<T : AuthToken>(
                     response.request.newBuilder()
                         .header(TOKEN_AUTHORIZATION, "$BEARER ${syncedToken.crAccessToken}")
                         .build()
-                } else null
+                } else {
+                    null
+                }
             }
 
             return runBlocking {
@@ -67,13 +69,12 @@ class TokenAuthenticator<T : AuthToken>(
                 }
             }
         }
-
     }
 
     private fun isRefreshTokenExpired(exception: Exception): Boolean {
-        return exception is HttpException
-                && exception.code() != Int.MIN_VALUE
-                && exception.code() == refreshTokenExpiredErrorCode
+        return exception is HttpException &&
+            exception.code() != Int.MIN_VALUE &&
+            exception.code() == refreshTokenExpiredErrorCode
     }
 
     private fun responseCount(response: Response): Int {
