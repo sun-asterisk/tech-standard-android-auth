@@ -10,14 +10,15 @@
     <string name="refresh_token">Refresh Token</string>
     <string name="sign_out">Sign Out</string>
     <string name="signin_failed">"SignIn failed"</string>
-    <string name="signin_via_google">Sign in with Google</string>
     <string name="google_web_client_id">913131600394-n7fhm315o3t86tug8dghvtdkjojh5sn0.apps.googleusercontent.com</string>
     <string name="sample_email">linh@framgia.com</string>
     <string name="sample_password">abcd1234</string>
-    <string name="credentials_auth">Credentials Auth</string>
-    <string name="suntech_server">SunTech Server</string>
-    <string name="google_auth">Google Auth</string>
-    <string name="facebook_auth">Facebook Auth</string>
+    <string name="credentials_auth">Credentials</string>
+    <string name="suntech_server">SunTech</string>
+    <string name="google_auth">Google Standard</string>
+    <string name="google_auth_firebase">Google Firebase</string>
+    <string name="facebook_auth">Facebook Standard</string>
+    <string name="facebook_auth_firebase">Facebook Firebase</string>
     <string name="facebook_app_id">896126228412582</string>
     <string name="facebook_app_secret">b11bf8b42dd83941938ca3ac321591da</string>
     <string name="fb_login_protocol_scheme">fb896126228412582</string>
@@ -25,5 +26,6 @@
     <string name="oauth_redirect_uri">https://nfcsamples-1572435748482.firebaseapp.com/__/auth/handler</string>
     <string name="sample_username_1">user1234</string>
     <string name="sample_password_1">passwordRequired@123</string>
+    <string name="link_account">Link Account</string>
 
 </resources>

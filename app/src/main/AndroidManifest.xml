@@ -30,12 +30,17 @@
             android:name=".credentials.suntech.SunTechActivity"
             android:exported="false" />
         <activity
-            android:name=".google.GoogleAuthActivity"
+            android:name=".google.standard.GoogleAuthActivity"
             android:exported="false" />
         <activity
-            android:name=".facebook.FacebookAuthActivity"
+            android:name=".google.firebase.GoogleFirebaseAuthActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".facebook.standard.FacebookAuthActivity"
+            android:exported="false" />
+        <activity
+            android:name=".facebook.firebase.FacebookFirebaseAuthActivity"
+            android:exported="false" />
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation" />

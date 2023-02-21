@@ -14,5 +14,9 @@ dependencyResolutionManagement {
 }
 rootProject.name = "tech-standard-android-auth"
 include ':app'
-include ':credentials'
-include ':socialauth'
+include ':credentialauth'
+include ':core'
+include ':googleauth'
+include ':googlefirebaseauth'
+include ':facebookauth'
+include ':facebookfirebaseauth'

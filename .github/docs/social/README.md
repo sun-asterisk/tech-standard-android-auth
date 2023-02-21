@@ -19,15 +19,4 @@ See what social authentication type you want to integrate
 
 ### [2. Facebook Authentication](facebook/README.md)
 
-## Other Notes:
-
-### To access specific social authentication class
-
-```kt
-SocialAuth.getAuth<GoogleAuth>(type = SocialType.GOOGLE)
-SocialAuth.getAuth<FacebookAuth>(type = SocialType.FACEBOOK)
-```
-
-### Exceptions
-
-`ModifiedDateTimeException`: This exception occurs when User's device time is incorrect.
+To see more detail, see [wiki](https://github.com/sun-asterisk/tech-standard-android-auth/wiki)

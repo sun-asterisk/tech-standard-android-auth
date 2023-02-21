@@ -26,32 +26,17 @@ read [Facebook documents](https://developers.facebook.com/docs/) for detail. Dep
 
 ### 2 Setup your FacebookConfig
 
-From anywhere you have your context, but recommended is `Application`, `Activity` or `Fragment`.
+From `Application` class.
 This should be called first, before you start to call any authentication actions.
-
-#### 2.1 Call inside multi socials config setup
-
-```kt
-initSocialAuth {
-    facebook(
-        appId = getString(R.string.facebook_app_id),
-        clientToken = getString(R.string.facebook_client_token)
-    ) {
-        readPermissions = listOf("public_profile")
-        // other settings
-    }
-}
-```
-
-#### 2.2 Call it separately (only use Facebook Auth)
 
 ```kt
 initFacebookAuth(
     appId = getString(R.string.facebook_app_id),
-    clientToken = getString(R.string.facebook_client_token)
+    clientToken = getString(R.string.facebook_client_token),
 ) {
-    readPermissions = listOf("public_profile")
-    // other settings
+    readPermissions = listOf("email", "public_profile")
+    enableAppEvent = false
+    useFacebookLoginButton = true
 }
 ```
 
@@ -69,7 +54,7 @@ initFacebookAuth(
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
     
-        <data android:scheme="@string/fb_login_protocol_scheme" /> <!--fbAPP-ID-->
+        <data android:scheme="@string/fb_login_protocol_scheme" /> <!--fbAPP-ID, Ex: fb111000111000111-->
     </intent-filter>
 </activity>
 ```
@@ -80,15 +65,14 @@ From your `FragmentActivity` or `Fragment`
 
 ```kt
 fun initFacebookSignIn(activity: FragmentActivity) {
-    SocialAuth.initialize(
-        types = arrayOf(SocialType.FACEBOOK),
-        activity = activity,
-        signInCallback = object : SocialAuthSignInCallback {
-            override fun onResult(user: SocialUser?, error: Throwable?) {
-                _signInState.value = SocialAuthResult(user, error)
+    FacebookStandardAuth.initialize(
+        activity,
+        signInCallback = object : SignInCallback {
+            override fun onResult(accessToken: AccessToken?, error: Throwable?) {
+                _signInState.value = SocialAuthResult(data = accessToken, exception = error)
             }
         },
-        signOutCallback = object : SocialAuthSignOutCallback {
+        signOutCallback = object : SignOutCallback {
             override fun onResult(error: Throwable?) {
                 _signOutState.value = error
             }
@@ -101,32 +85,33 @@ fun initFacebookSignIn(activity: FragmentActivity) {
 
 ```kt
 fun signIn() {
-    SocialAuth.signIn(SocialType.FACEBOOK)
+    FacebookStandardAuth.signIn()
 }
 
 // For using Facebook LoginButton
 fun setupViews() {
-    SocialAuth.getAuth<FacebookAuth>(SocialType.FACEBOOK)
-        ?.setLoginButton(binding.facebookSignIn)
+    FacebookStandardAuth.setLoginButton(binding.facebookSignIn)
     // other views setup
 }
 
 fun logout() {
-    SocialAuth.signOut(SocialType.FACEBOOK)
+    FacebookStandardAuth.signOut()
 }
 
 fun isLoggedIn(): Boolean {
-    return SocialAuth.isSignedIn(SocialType.FACEBOOK)
+    return FacebookStandardAuth.isSignedIn()
 }
 
-fun getUser(): SocialUser? {
-    return SocialAuth.getUser(SocialType.FACEBOOK)
-}
+
 
 fun getFacebookToken(): AccessToken? {
     return AccessToken.getCurrentAccessToken()
 }
 
+fun getProfile(): Profile? {
+  return FacebookStandardAuth.getProfile()
+}
+// or
 fun getFacebookProfile(): Profile? {
     return Profile.getCurrentProfile()
 }
