@@ -7,27 +7,19 @@ There are 3 simple steps you need to do:
 
 ### 1 Setup your GoogleConfig
 
-From anywhere you have your context, but recommended is `Application`, `Activity` or `Fragment`.
+From `Application` class.
 This should be called first, before you start to call any authentication actions.
 
-#### 1.1 Call inside multi socials config setup
-
 ```kt
-initSocialAuth {
-    google(getString(R.string.google_web_client_id)) {
-        enableOneTapSignIn = true
-        enableFilterByAuthorizedAccounts = true
-    }
-    facebook(getString(R.string.facebook_application_id)) {
-        ...
-    }
-}
-```
-
-#### 1.2 Call it separately (only use Google Auth)
-
-```kt
-initGoogleAuth(getString(R.string.google_web_client_id)) {
+initGoogleAuth(
+    webClientId = getString(R.string.google_web_client_id),
+    signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestEmail()
+        .requestIdToken(getString(R.string.google_web_client_id))
+        .requestProfile()
+        // ...
+        .build(),
+) {
     enableOneTapSignIn = true
     enableFilterByAuthorizedAccounts = true
 }
@@ -39,18 +31,27 @@ From your `FragmentActivity` or `Fragment`
 
 ```kt
 fun initGoogleSignIn(activity: FragmentActivity) {
-    SocialAuth.initialize(
-        activity = activity,
-        signInCallback = object : SocialAuthSignInCallback {
-            override fun onResult(user: SocialUser?, error: Throwable?) {
-                // Gets the sign in result
+    GoogleStandardAuth.initialize(
+        activity,
+        signInCallback = object : SignInCallback {
+            override fun onResult(account: GoogleSignInAccount?, error: Throwable?) {
+                _signInState.value = SocialAuthResult(data = account, exception = error)
             }
         },
-        signOutCallback = object : SocialAuthSignOutCallback {
+        signOutCallback = object : SignOutCallback {
             override fun onResult(error: Throwable?) {
-                // Gets the sign out result
+                _signOutState.value = error
             }
-        })
+        },
+        oneTapSignInCallback = object : OneTapSignInCallback {
+            override fun onResult(credential: SignInCredential?, error: Throwable?) {
+                // TODO: Handle your credentials if needed
+                // https://developers.google.com/identity/one-tap/android/get-saved-credentials#4_handle_the_users_response
+                // NOTE: about Stop displaying OneTap UI if user cancel multiple times
+                // https://developers.google.com/identity/one-tap/android/get-saved-credentials#disable-one-tap
+            }
+        },
+    )
 }
 ```
 
@@ -58,18 +59,18 @@ fun initGoogleSignIn(activity: FragmentActivity) {
 
 ```kt
 fun signIn() {
-    SocialAuth.signIn(SocialType.GOOGLE)
+    GoogleStandardAuth.signIn()
 }
 
 fun logout() {
-    SocialAuth.signOut(SocialType.GOOGLE)
+    GoogleStandardAuth.signOut(revokeAccess = true)
 }
 
 fun isLoggedIn(): Boolean {
-    return SocialAuth.isSignedIn(SocialType.GOOGLE)
+    return GoogleStandardAuth.isSignedIn()
 }
 
-fun getUser(): SocialUser? {
-    return SocialAuth.getUser(SocialType.GOOGLE)
+fun getUser(): GoogleSignInAccount? {
+    return GoogleStandardAuth.getUser()
 }
 ```
