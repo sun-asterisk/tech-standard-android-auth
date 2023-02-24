@@ -34,13 +34,13 @@ class GoogleAuthActivity : AppCompatActivity() {
         }
 
         binding.signOut.setOnClickListener {
-            googleAuthViewModel.logout()
+            googleAuthViewModel.signOut()
         }
     }
 
     private fun initData() {
         googleAuthViewModel.initGoogleSignIn(this)
-        if (!googleAuthViewModel.isLoggedIn()) {
+        if (!googleAuthViewModel.isSignedIn()) {
             googleAuthViewModel.showOneTapSignIn()
         }
     }
@@ -75,7 +75,7 @@ class GoogleAuthActivity : AppCompatActivity() {
     }
 
     private fun switchUi() {
-        if (googleAuthViewModel.isLoggedIn()) {
+        if (googleAuthViewModel.isSignedIn()) {
             binding.tvId.text = "Welcome: ${googleAuthViewModel.getUser()?.email}"
             binding.signInGroup.visibility = View.GONE
             binding.mainGroup.visibility = View.VISIBLE

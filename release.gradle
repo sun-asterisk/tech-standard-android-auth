@@ -1,0 +1,21 @@
+ext {
+    coreVersionName = '1.0.0'
+    coreVersionCode = 1
+
+    credentialsAuthVersionName = '1.0.0'
+    credentialsAuthVersionCode = 1
+
+    facebookAuthVersionName = '1.0.0'
+    facebookAuthVersionCode = 1
+
+    facebookFirebaseAuthVersionName = '1.0.0'
+    facebookFirebaseAuthVersionCode = 1
+
+    googleAuthVersionName = '1.0.0'
+    googleAuthVersionCode = 1
+
+    googleFirebaseAuthVersionName = '1.0.0'
+    googleFirebaseAuthVersionCode = 1
+
+    libraryGroupId = 'com.github.sun-asterisk.tech-standard-android-auth'
+}

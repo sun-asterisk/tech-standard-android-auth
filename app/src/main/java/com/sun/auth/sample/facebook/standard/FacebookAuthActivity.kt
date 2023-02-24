@@ -36,6 +36,7 @@ class FacebookAuthActivity : AppCompatActivity() {
             facebookAuthViewModel.signOut()
         }
 
+        binding.facebookSignIn.permissions = listOf("email", "public_profile")
         // To use facebook button
         FacebookStandardAuth.setLoginButton(binding.facebookSignIn)
     }

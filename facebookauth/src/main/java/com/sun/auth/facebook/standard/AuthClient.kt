@@ -73,7 +73,7 @@ internal class AuthClient(
         check(config.useFacebookLoginButton) {
             "Must enable config useFacebookLoginButton first!"
         }
-        check(button.permissions.isEmpty() || config.readPermissions.isEmpty()) {
+        check(button.permissions.isNotEmpty() || config.readPermissions.isNotEmpty()) {
             "Must set config permissions or LoginButton permissions"
         }
         if (button.permissions.isEmpty()) {
@@ -115,5 +115,9 @@ internal class AuthClient(
 
     fun getProfile(): Profile? {
         return Profile.getCurrentProfile()
+    }
+
+    fun getAccessToken(): AccessToken? {
+        return AccessToken.getCurrentAccessToken()
     }
 }

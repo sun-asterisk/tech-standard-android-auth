@@ -67,7 +67,7 @@ class CredentialAuthActivity : AppCompatActivity() {
         }
 
         binding.signOut.setOnClickListener {
-            credentialAuthViewModel.logout {
+            credentialAuthViewModel.signOut {
                 binding.mainGroup.visibility = View.GONE
                 binding.signInGroup.visibility = View.VISIBLE
             }
@@ -113,7 +113,7 @@ class CredentialAuthActivity : AppCompatActivity() {
 
     private fun switchUi() {
         binding.tvId.text = "Welcome: ${credentialAuthViewModel.getToken()?.crAccessToken}"
-        if (credentialAuthViewModel.isLoggedIn()) {
+        if (credentialAuthViewModel.isSignedIn()) {
             binding.signInGroup.visibility = View.GONE
             binding.mainGroup.visibility = View.VISIBLE
         } else {
