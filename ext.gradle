@@ -1,0 +1,24 @@
+ext.jitpackPublisher = {
+    afterEvaluate {
+        publishing {
+            publications {
+                release(MavenPublication) {
+                    from components.release
+                    groupId = findProperty('groupId')
+                    artifactId = findProperty('artifactId')
+                    version = findProperty('versionName')
+                }
+            }
+        }
+    }
+}
+
+ext.javaConfigs = {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}

@@ -1,7 +1,7 @@
 buildscript {
     apply from: "../ktlint.gradle"
     apply from: "../detekt.gradle"
-    apply from: "../release.gradle"
+    apply from: "../ext.gradle"
 }
 
 plugins {
@@ -10,7 +10,7 @@ plugins {
     id 'maven-publish'
 }
 
-group=project.ext.libraryGroupId
+group=findProperty("groupId")
 check.dependsOn ktlintFormat
 
 android {
@@ -20,8 +20,8 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 33
-        versionName facebookFirebaseAuthVersionName
-        versionCode facebookFirebaseAuthVersionCode
+        versionName = findProperty("versionName")
+        versionCode = findProperty("versionCode")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -33,13 +33,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+
+    with javaConfigs
 }
 
 dependencies {
@@ -54,15 +49,4 @@ dependencies {
     api 'com.facebook.android:facebook-login:latest.release'
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = libraryGroupId
-                artifactId = 'facebookfirebaseauth'
-                version = facebookFirebaseAuthVersionName
-            }
-        }
-    }
-}
+with jitpackPublisher
