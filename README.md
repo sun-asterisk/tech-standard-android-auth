@@ -23,7 +23,7 @@ you can manage the authentication result from Firebase.
 2. With [Facebook Standard authentication](https://github.com/sun-asterisk/tech-standard-android-auth/wiki/Facebook-Standard-authentication)
 you get the result directly from Facebook, and provide signIn info to your BackEnd.
 
-## Getting start
+## Getting started
 From project `build.gradle` (or `settings.gradle`), add Jitpack maven
 ```groovy
 repositories {
@@ -49,7 +49,7 @@ Feel free to make a pull request. Make sure your code is formatted and fixed lin
 
 1. Clean project first to copy team-props git-hooks
 2. Pull and checkout from `develop` branch
-3. A commit message must be have one of these prefixes [add|modify|fix|revert|hotfix], Ex: [Add] Readme.md
+3. A commit message must be have one of these prefixes [add|modify|fix|revert|hotfix], Ex: [Add] README.md
 4. To auto format code, run `./gradlew ktlintFormat`
 5. To check lint issues, run `./gradlew detekt`
 See all reports in `reports` folder.
