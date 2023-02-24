@@ -3,6 +3,7 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 dependencyResolutionManagement {
@@ -10,9 +11,14 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 rootProject.name = "tech-standard-android-auth"
 include ':app'
-include ':credentials'
-include ':socialauth'
+include ':credentialauth'
+include ':core'
+include ':googleauth'
+include ':googlefirebaseauth'
+include ':facebookauth'
+include ':facebookfirebaseauth'

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/activity_horizontal_margin"
-    tools:context=".google.GoogleAuthActivity">
+    tools:context=".google.standard.GoogleAuthActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/signInGroup"
@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:layout_marginTop="64dp"
-            android:text="@string/signin_via_google"
+            android:text="@string/google_auth"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -48,12 +48,5 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="@string/sign_out" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/linkAccount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Link Account" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 </androidx.constraintlayout.widget.ConstraintLayout>
