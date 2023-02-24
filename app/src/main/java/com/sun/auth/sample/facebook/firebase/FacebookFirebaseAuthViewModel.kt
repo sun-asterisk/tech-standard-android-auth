@@ -4,8 +4,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.facebook.Profile
 import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserInfo
 import com.sun.auth.core.PROVIDER_FACEBOOK
 import com.sun.auth.facebook.firebase.FacebookFirebaseAuth
@@ -32,8 +32,8 @@ class FacebookFirebaseAuthViewModel : ViewModel() {
         return FacebookFirebaseAuth.isSignedIn()
     }
 
-    fun getUser(): Profile? {
-        return FacebookFirebaseAuth.getProfile()
+    fun getUser(): FirebaseUser? {
+        return FacebookFirebaseAuth.getFirebaseUser()
     }
 
     fun getLinkedAccounts(): UserInfo? {

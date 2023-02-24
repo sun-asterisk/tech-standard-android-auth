@@ -23,11 +23,11 @@ class GoogleAuthViewModel : ViewModel() {
         GoogleStandardAuth.signIn()
     }
 
-    fun logout() {
+    fun signOut() {
         GoogleStandardAuth.signOut(revokeAccess = true)
     }
 
-    fun isLoggedIn(): Boolean {
+    fun isSignedIn(): Boolean {
         return GoogleStandardAuth.isSignedIn()
     }
 

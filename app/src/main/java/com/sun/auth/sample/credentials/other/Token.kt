@@ -25,8 +25,4 @@ data class Token(
         get() = accessToken.orEmpty()
     override var crRefreshToken: String? = null
         get() = refreshToken ?: field
-        set(value) {
-            if (field == value) return
-            field = value
-        }
 }

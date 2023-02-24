@@ -74,7 +74,7 @@ class GoogleFirebaseAuthActivity : AppCompatActivity() {
     }
 
     private fun switchUi() {
-        if (googleAuthViewModel.isLoggedIn()) {
+        if (googleAuthViewModel.isSignedIn()) {
             binding.tvId.text = "Welcome: ${googleAuthViewModel.getUserInfo()?.email}"
             binding.signInGroup.visibility = View.GONE
             binding.mainGroup.visibility = View.VISIBLE

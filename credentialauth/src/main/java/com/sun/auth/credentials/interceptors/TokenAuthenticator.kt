@@ -17,10 +17,10 @@ import retrofit2.HttpException
  *          .build()
  * ```
  *
- * @param refreshTokenExpiredErrorCode The defined server error code about RefreshToken is expired.
+ * @param refreshTokenExpiredErrorCode The defined server error code about RefreshToken is expired, EX: 401
  */
 class TokenAuthenticator<T : AuthToken>(
-    private val refreshTokenExpiredErrorCode: Int = Int.MIN_VALUE,
+    private val refreshTokenExpiredErrorCode: Int,
 ) : Authenticator {
     private val auth: CredentialsAuth by lazy { CredentialsAuth.getInstance() }
 

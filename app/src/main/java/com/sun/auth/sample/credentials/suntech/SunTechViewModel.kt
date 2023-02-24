@@ -46,11 +46,11 @@ class SunTechViewModel : ViewModel() {
         return CredentialsAuth.getInstance().getToken()
     }
 
-    fun logout(callback: () -> Unit) {
+    fun signOut(callback: () -> Unit) {
         CredentialsAuth.getInstance().signOut(callback)
     }
 
-    fun isLoggedIn(): Boolean {
+    fun isSignedIn(): Boolean {
         return CredentialsAuth.getInstance().isSignedIn<SunToken>()
     }
 

@@ -28,7 +28,7 @@ class GoogleFirebaseAuthViewModel : ViewModel() {
         GoogleFirebaseAuth.signOut()
     }
 
-    fun isLoggedIn(): Boolean {
+    fun isSignedIn(): Boolean {
         return GoogleFirebaseAuth.isSignedIn()
     }
 

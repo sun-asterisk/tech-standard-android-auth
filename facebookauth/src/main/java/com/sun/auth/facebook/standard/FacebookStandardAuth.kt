@@ -3,6 +3,7 @@ package com.sun.auth.facebook.standard
 import android.content.Context
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import com.facebook.AccessToken
 import com.facebook.Profile
 import com.facebook.login.widget.LoginButton
 import com.sun.auth.core.weak
@@ -113,5 +114,13 @@ object FacebookStandardAuth {
      */
     fun getProfile(): Profile? {
         return authClient?.getProfile()
+    }
+
+    /**
+     * Gets the facebook accessToken.
+     * @return Facebook accessToken or null.
+     */
+    fun getAccessToken(): AccessToken? {
+        return authClient?.getAccessToken()
     }
 }

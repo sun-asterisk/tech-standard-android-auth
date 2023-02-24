@@ -67,7 +67,7 @@ class SunTechActivity : AppCompatActivity() {
         }
 
         binding.signOut.setOnClickListener {
-            sunTechViewModel.logout {
+            sunTechViewModel.signOut {
                 binding.mainGroup.visibility = View.GONE
                 binding.signInGroup.visibility = View.VISIBLE
             }
@@ -113,7 +113,7 @@ class SunTechActivity : AppCompatActivity() {
 
     private fun switchUi() {
         binding.tvId.text = "Welcome: ${sunTechViewModel.getToken()?.crAccessToken}"
-        if (sunTechViewModel.isLoggedIn()) {
+        if (sunTechViewModel.isSignedIn()) {
             binding.signInGroup.visibility = View.GONE
             binding.mainGroup.visibility = View.VISIBLE
         } else {
