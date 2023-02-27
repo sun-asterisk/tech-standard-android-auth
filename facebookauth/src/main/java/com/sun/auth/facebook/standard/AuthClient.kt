@@ -9,6 +9,7 @@ import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
 import com.sun.auth.core.CancellationAuthException
 import com.sun.auth.core.SocialAuth
+import com.sun.auth.core.SocialAuthException
 
 internal class AuthClient(
     boundActivity: FragmentActivity,
@@ -39,7 +40,7 @@ internal class AuthClient(
             }
 
             override fun onError(error: FacebookException) {
-                signInCallback?.onResult(error = error)
+                signInCallback?.onResult(error = SocialAuthException(error))
             }
         }
     }
@@ -109,7 +110,7 @@ internal class AuthClient(
             facebookInstance.logOut()
             signOutCallback?.onResult()
         } catch (e: Exception) {
-            signOutCallback?.onResult(e)
+            signOutCallback?.onResult(error = SocialAuthException(e))
         }
     }
 

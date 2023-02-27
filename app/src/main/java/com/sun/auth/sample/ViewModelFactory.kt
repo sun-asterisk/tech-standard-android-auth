@@ -2,8 +2,7 @@ package com.sun.auth.sample
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.sun.auth.sample.credentials.other.CredentialAuthViewModel
-import com.sun.auth.sample.credentials.suntech.SunTechViewModel
+import com.sun.auth.sample.credentials.CredentialsAuthViewModel
 import com.sun.auth.sample.facebook.firebase.FacebookFirebaseAuthViewModel
 import com.sun.auth.sample.facebook.standard.FacebookAuthViewModel
 import com.sun.auth.sample.google.firebase.GoogleFirebaseAuthViewModel
@@ -13,11 +12,11 @@ class ViewModelFactory : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(CredentialAuthViewModel::class.java)) {
-            return CredentialAuthViewModel() as T
+        if (modelClass.isAssignableFrom(CredentialsAuthViewModel::class.java)) {
+            return CredentialsAuthViewModel() as T
         }
-        if (modelClass.isAssignableFrom(SunTechViewModel::class.java)) {
-            return SunTechViewModel() as T
+        if (modelClass.isAssignableFrom(CredentialsAuthViewModel::class.java)) {
+            return CredentialsAuthViewModel() as T
         }
         if (modelClass.isAssignableFrom(GoogleAuthViewModel::class.java)) {
             return GoogleAuthViewModel() as T

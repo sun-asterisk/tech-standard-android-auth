@@ -40,7 +40,7 @@ class GoogleAuthViewModel : ViewModel() {
             activity,
             signInCallback = object : SignInCallback {
                 override fun onResult(account: GoogleSignInAccount?, error: Throwable?) {
-                    _signInState.value = SocialAuthResult(data = account, exception = error)
+                    _signInState.value = SocialAuthResult(data = account, error = error)
                 }
             },
             signOutCallback = object : SignOutCallback {
@@ -50,6 +50,7 @@ class GoogleAuthViewModel : ViewModel() {
             },
             oneTapSignInCallback = object : OneTapSignInCallback {
                 override fun onResult(credential: SignInCredential?, error: Throwable?) {
+                    _signInState.value = SocialAuthResult(data = credential, error = error)
                     // TODO: Handle your credentials if needed
                     // https://developers.google.com/identity/one-tap/android/get-saved-credentials#4_handle_the_users_response
                     // NOTE: about Stop displaying OneTap UI if user cancel multiple times

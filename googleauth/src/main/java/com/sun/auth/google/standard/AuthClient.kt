@@ -72,7 +72,7 @@ internal class AuthClient(
             .addOnSuccessListener {
                 launchSignIn(it.pendingIntent)
             }.addOnFailureListener {
-                oneTapSignInCallback?.onResult(error = it)
+                oneTapSignInCallback?.onResult(error = SocialAuthException(it))
             }
     }
 
@@ -83,7 +83,7 @@ internal class AuthClient(
         try {
             signInLauncher?.launch(signInClient.signInIntent)
         } catch (e: Exception) {
-            signInCallback?.onResult(error = e)
+            signInCallback?.onResult(error = SocialAuthException(e))
         }
     }
 
@@ -104,7 +104,7 @@ internal class AuthClient(
             if (e.statusCode == Activity.RESULT_CANCELED) {
                 signInCallback?.onResult(error = CancellationAuthException())
             } else {
-                signInCallback?.onResult(error = e)
+                signInCallback?.onResult(error = SocialAuthException(e))
             }
         }
     }
@@ -127,7 +127,7 @@ internal class AuthClient(
                 signOutCallback?.onResult()
             }
         }.addOnFailureListener {
-            signOutCallback?.onResult(it)
+            signOutCallback?.onResult(error = SocialAuthException(it))
         }
     }
 
@@ -136,7 +136,7 @@ internal class AuthClient(
             val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent).build()
             oneTapSignInLauncher?.launch(intentSenderRequest)
         } catch (e: Exception) {
-            signInCallback?.onResult(error = e)
+            signInCallback?.onResult(error = SocialAuthException(e))
         }
     }
 
@@ -152,7 +152,7 @@ internal class AuthClient(
             if (e.statusCode == Activity.RESULT_CANCELED) {
                 oneTapSignInCallback?.onResult(error = CancellationAuthException())
             } else {
-                oneTapSignInCallback?.onResult(error = e)
+                oneTapSignInCallback?.onResult(error = SocialAuthException(e))
             }
         }
     }

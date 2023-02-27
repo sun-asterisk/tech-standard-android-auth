@@ -45,7 +45,7 @@ class GoogleFirebaseAuthViewModel : ViewModel() {
             activity,
             signInCallback = object : SignInCallback {
                 override fun onResult(authResult: AuthResult?, error: Throwable?) {
-                    _signInState.value = SocialAuthResult(data = authResult, exception = error)
+                    _signInState.value = SocialAuthResult(data = authResult, error = error)
                 }
             },
             signOutCallback = object : SignOutCallback {

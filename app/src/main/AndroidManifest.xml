@@ -24,10 +24,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".credentials.other.CredentialAuthActivity"
-            android:exported="false" />
-        <activity
-            android:name=".credentials.suntech.SunTechActivity"
+            android:name=".credentials.CredentialsAuthActivity"
             android:exported="false" />
         <activity
             android:name=".google.standard.GoogleAuthActivity"

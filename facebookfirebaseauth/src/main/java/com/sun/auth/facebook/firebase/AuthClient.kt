@@ -32,7 +32,7 @@ internal class AuthClient(
             }
 
             override fun onError(error: FacebookException) {
-                signInCallback?.onResult(error = error)
+                signInCallback?.onResult(error = SocialAuthException(error))
             }
         }
     }
@@ -102,7 +102,7 @@ internal class AuthClient(
             firebaseAuth.signOut()
             signOutCallback?.onResult()
         } catch (e: Exception) {
-            signOutCallback?.onResult(e)
+            signOutCallback?.onResult(error = SocialAuthException(e))
         }
     }
 
@@ -150,7 +150,7 @@ internal class AuthClient(
                 if (it is FirebaseAuthInvalidCredentialsException) {
                     signInCallback?.onResult(error = InvalidCredentialsException(it))
                 } else {
-                    signInCallback?.onResult(error = it)
+                    signInCallback?.onResult(error = SocialAuthException(it))
                 }
             }
     }
@@ -162,7 +162,7 @@ internal class AuthClient(
             if (error is FirebaseAuthUserCollisionException) {
                 signInWithFirebase(credential)
             } else {
-                signInCallback?.onResult(error = error)
+                signInCallback?.onResult(error = SocialAuthException(error))
             }
         }
     }
