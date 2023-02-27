@@ -5,9 +5,9 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.sun.auth.core.InvalidCredentialsException
 import com.sun.auth.sample.ViewModelFactory
 import com.sun.auth.sample.databinding.ActivityGoogleFirebaseAuthBinding
+import com.sun.auth.sample.handleSocialAuthError
 
 class GoogleFirebaseAuthActivity : AppCompatActivity() {
 
@@ -47,20 +47,16 @@ class GoogleFirebaseAuthActivity : AppCompatActivity() {
     private fun observes() {
         googleAuthViewModel.apply {
             signInState.observe(this@GoogleFirebaseAuthActivity) {
-                if (it.exception != null) {
-                    if (it.exception is InvalidCredentialsException) {
-                        displayMessage("Your datetime or given info is incorrect, please correct!")
-                    } else {
-                        displayMessage("SignIn error ${it.exception.message.orEmpty()}")
-                    }
-                } else {
-                    displayMessage("SignIn success")
+                if (it.data != null) {
+                    displayMessage("SignIn Success")
+                } else if (it.error != null) {
+                    handleSocialAuthError(it.error)
                 }
                 switchUi()
             }
             signOutState.observe(this@GoogleFirebaseAuthActivity) {
                 if (it != null) {
-                    displayMessage("SignOut error ${it.message}")
+                    handleSocialAuthError(it)
                 } else {
                     displayMessage("SignOut success")
                 }
@@ -75,7 +71,11 @@ class GoogleFirebaseAuthActivity : AppCompatActivity() {
 
     private fun switchUi() {
         if (googleAuthViewModel.isSignedIn()) {
-            binding.tvId.text = "Welcome: ${googleAuthViewModel.getUserInfo()?.email}"
+            binding.tvId.text = if (googleAuthViewModel.getUserInfo() == null) {
+                "Press Link Account to link with other Social account"
+            } else {
+                "Welcome: ${googleAuthViewModel.getUserInfo()?.email}"
+            }
             binding.signInGroup.visibility = View.GONE
             binding.mainGroup.visibility = View.VISIBLE
         } else {

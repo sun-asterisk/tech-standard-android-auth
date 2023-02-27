@@ -1,0 +1,58 @@
+buildscript {
+    apply from: "../ktlint.gradle"
+    apply from: "../detekt.gradle"
+    apply from: "../ext.gradle"
+}
+
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'maven-publish'
+}
+
+group=findProperty("groupId")
+check.dependsOn ktlintFormat
+
+android {
+    namespace 'com.sun.auth.credentials'
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 23
+        targetSdk 33
+        versionName = findProperty("versionName")
+        versionCode = findProperty("versionCode")
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    with javaConfigs
+}
+
+dependencies {
+    implementation project(':core')
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+
+    implementation "androidx.security:security-crypto-ktx:1.1.0-alpha04"
+    api "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation "com.google.code.gson:gson:2.10"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.10.0"
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.10.0"
+    testImplementation "io.mockk:mockk:1.13.4"
+    testImplementation "io.mockk:mockk-android:1.13.3"
+}
+
+with jitpackPublisher

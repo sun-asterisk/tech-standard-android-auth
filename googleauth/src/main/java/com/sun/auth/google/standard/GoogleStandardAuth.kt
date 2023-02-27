@@ -65,7 +65,7 @@ object GoogleStandardAuth {
         check(!activity.isFinishing) {
             "The FragmentActivity is currently unavailable!"
         }
-        check(config != null) {
+        checkNotNull(config) {
             "You must call initGoogleAuth first!"
         }
         authClient = AuthClient(

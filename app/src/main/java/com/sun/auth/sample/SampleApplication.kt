@@ -4,40 +4,40 @@ import android.app.Application
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.gson.JsonObject
 import com.sun.auth.credentials.CredentialsAuth
+import com.sun.auth.credentials.initCredentialsAuth
 import com.sun.auth.credentials.results.AuthTokenChanged
 import com.sun.auth.facebook.firebase.initFacebookFirebaseAuth
 import com.sun.auth.facebook.standard.initFacebookAuth
 import com.sun.auth.google.firebase.initGoogleAuth
 import com.sun.auth.google.standard.initGoogleAuth
-import com.sun.auth.sample.credentials.suntech.SunToken
+import com.sun.auth.sample.credentials.Token
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 
 class SampleApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        setupSunTechAuth()
+        setupCredentialsAuth()
         setupGoogleStandardAuth()
         setupGoogleFirebaseAuth()
         setupFacebookStandardAuth()
         setupFacebookFirebaseAuth()
     }
 
-    private fun setupSunTechAuth() {
-        CredentialsAuth.Builder()
-            .context(applicationContext)
-            .signInUrl(url = "http://10.0.5.78:8001/api/login")
-            .authTokenClazz(SunToken::class.java)
-            .authTokenChanged(object : AuthTokenChanged<SunToken> {
-                // do this when you want to refresh token automatically
-                override fun onTokenUpdate(token: SunToken?): Request {
-                    return buildSunTechRefreshTokenRequest(token)
+    private fun setupCredentialsAuth() {
+        initCredentialsAuth(
+            signInUrl = "http://10.0.5.78:8001/api/login",
+            authTokenClazz = Token::class.java,
+        ) {
+            authTokenChanged = object : AuthTokenChanged<Token> {
+                override fun onTokenUpdate(token: Token?): Request {
+                    return buildRefreshTokenRequest(token)
                 }
-            })
-            .build()
+            }
+        }
     }
 
-    private fun buildSunTechRefreshTokenRequest(token: SunToken?): Request {
+    private fun buildRefreshTokenRequest(token: Token?): Request {
         val json = JsonObject().apply {
             addProperty("refresh_token", token?.crRefreshToken.orEmpty())
         }
@@ -66,6 +66,7 @@ class SampleApplication : Application() {
         initGoogleAuth(
             webClientId = getString(R.string.google_web_client_id),
         ) {
+            enableLinkAccounts = true
             enableOneTapSignIn = true
             enableFilterByAuthorizedAccounts = true
         }
@@ -87,6 +88,7 @@ class SampleApplication : Application() {
             appId = getString(R.string.facebook_app_id),
             clientToken = getString(R.string.facebook_client_token),
         ) {
+            enableLinkAccounts = true
             readPermissions = listOf("email", "public_profile")
             enableAppEvent = false
             enableLoginStatus = true

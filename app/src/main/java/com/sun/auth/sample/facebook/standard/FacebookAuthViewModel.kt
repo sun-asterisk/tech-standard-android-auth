@@ -39,7 +39,7 @@ class FacebookAuthViewModel : ViewModel() {
             activity,
             signInCallback = object : SignInCallback {
                 override fun onResult(accessToken: AccessToken?, error: Throwable?) {
-                    _signInState.value = SocialAuthResult(data = accessToken, exception = error)
+                    _signInState.value = SocialAuthResult(data = accessToken, error = error)
                 }
             },
             signOutCallback = object : SignOutCallback {

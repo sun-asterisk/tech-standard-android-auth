@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.sun.auth.sample.ViewModelFactory
 import com.sun.auth.sample.databinding.ActivityFacebookFirebaseAuthBinding
+import com.sun.auth.sample.handleSocialAuthError
 
 class FacebookFirebaseAuthActivity : AppCompatActivity() {
     private val facebookAuthViewModel: FacebookFirebaseAuthViewModel by lazy {
@@ -41,16 +42,16 @@ class FacebookFirebaseAuthActivity : AppCompatActivity() {
     private fun observes() {
         facebookAuthViewModel.apply {
             signInState.observe(this@FacebookFirebaseAuthActivity) {
-                if (it.exception != null) {
-                    displayMessage("SignIn error ${it.exception.message.orEmpty()}")
-                } else {
-                    displayMessage("SignIn success")
+                if (it.data != null) {
+                    displayMessage("SignIn Success")
+                } else if (it.error != null) {
+                    handleSocialAuthError(it.error)
                 }
                 switchUi()
             }
             signOutState.observe(this@FacebookFirebaseAuthActivity) {
                 if (it != null) {
-                    displayMessage("SignOut error ${it.message.orEmpty()}")
+                    handleSocialAuthError(it)
                 } else {
                     displayMessage("SignOut success")
                 }

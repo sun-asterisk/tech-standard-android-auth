@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    implementation project(':credentialauth')
+    implementation project(':credentialsauth')
     implementation project(':core')
     implementation project(':googleauth')
     implementation project(':googlefirebaseauth')

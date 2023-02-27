@@ -57,7 +57,7 @@ class AuthClient(
                 launchSignIn(it.result)
             }
             .addOnFailureListener {
-                signInCallback?.onResult(error = it)
+                signInCallback?.onResult(error = SocialAuthException(it))
             }
     }
 
@@ -78,7 +78,7 @@ class AuthClient(
             if (e.statusCode == Activity.RESULT_CANCELED) {
                 signInCallback?.onResult(error = CancellationAuthException())
             } else {
-                signInCallback?.onResult(error = e)
+                signInCallback?.onResult(error = SocialAuthException(e))
             }
         }
     }
@@ -96,7 +96,7 @@ class AuthClient(
             firebaseAuth.signOut()
             signOutCallback?.onResult()
         }.addOnFailureListener {
-            signOutCallback?.onResult(it)
+            signOutCallback?.onResult(error = SocialAuthException(it))
         }
     }
 
@@ -105,7 +105,7 @@ class AuthClient(
             val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent).build()
             signInLauncher?.launch(intentSenderRequest)
         } catch (e: Exception) {
-            signInCallback?.onResult(error = e)
+            signInCallback?.onResult(error = SocialAuthException(e))
         }
     }
 
@@ -127,7 +127,7 @@ class AuthClient(
                 if (error is FirebaseAuthUserCollisionException) {
                     signInWithFirebase(credential)
                 } else {
-                    signInCallback?.onResult(error = error)
+                    signInCallback?.onResult(error = SocialAuthException(error))
                 }
             }
     }
@@ -140,7 +140,7 @@ class AuthClient(
                 if (it is FirebaseAuthInvalidCredentialsException) {
                     signInCallback?.onResult(error = InvalidCredentialsException(it))
                 } else {
-                    signInCallback?.onResult(error = it)
+                    signInCallback?.onResult(error = SocialAuthException(it))
                 }
             }
     }
@@ -160,7 +160,7 @@ class AuthClient(
                 launchSignIn(it.pendingIntent)
             }
             .addOnFailureListener {
-                signInCallback?.onResult(error = it)
+                signInCallback?.onResult(error = SocialAuthException(it))
             }
     }
 

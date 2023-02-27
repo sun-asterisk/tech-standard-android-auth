@@ -5,8 +5,8 @@ process to your application.<br>
 See [sample code](app/src/main/java/com/sun/auth/sample) & each library module for more detail.
 
 ## [Authentication with credential](https://github.com/sun-asterisk/tech-standard-android-auth/wiki/Credential-authentication)
-This [credential auth library](https://github.com/sun-asterisk/tech-standard-android-auth/tree/develop/credentialauth) 
-provides a simple way to help you easy to handle credential authentication and token management.
+This [Credentials auth library](https://github.com/sun-asterisk/tech-standard-android-auth/tree/master/credentialsauth) 
+provides a simple way to help you easy to handle credentials authentication and token management.
 Some of features are `signIn`, `signOut`, `refreshToken`...
 
 ## [Authentication with Google](https://github.com/sun-asterisk/tech-standard-android-auth/wiki/Google-Standard-Authentication)
@@ -35,7 +35,7 @@ Then add required dependencies to your `app/build.gradle`
 dependencies {
     implementation "com.github.sun-asterisk.tech-standard-android-auth:core:${latest_version}" // required
     
-    implementation "com.github.sun-asterisk.tech-standard-android-auth:credentialauth:${latest_version}"
+    implementation "com.github.sun-asterisk.tech-standard-android-auth:credentialsauth:${latest_version}"
     implementation "com.github.sun-asterisk.tech-standard-android-auth:googleauth:${latest_version}"
     implementation "com.github.sun-asterisk.tech-standard-android-auth:googlefirebaseauth:${latest_version}"
     implementation "com.github.sun-asterisk.tech-standard-android-auth:facebookauth:${latest_version}"
