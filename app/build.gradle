@@ -43,12 +43,13 @@ android {
 }
 
 dependencies {
-    implementation project(':credentialsauth')
-    implementation project(':core')
-    implementation project(':googleauth')
-    implementation project(':googlefirebaseauth')
-    implementation project(':facebookauth')
-    implementation project(':facebookfirebaseauth')
+    implementation 'com.github.sun-asterisk.tech-standard-android-auth:core:master-SNAPSHOT'
+    implementation 'com.github.sun-asterisk.tech-standard-android-auth:credentialsauth:master-SNAPSHOT'
+    implementation 'com.github.sun-asterisk.tech-standard-android-auth:googleauth:master-SNAPSHOT'
+    implementation 'com.github.sun-asterisk.tech-standard-android-auth:googlefirebaseauth:master-SNAPSHOT'
+    implementation 'com.github.sun-asterisk.tech-standard-android-auth:facebookauth:master-SNAPSHOT'
+    implementation 'com.github.sun-asterisk.tech-standard-android-auth:facebookfirebaseauth:master-SNAPSHOT'
+
     implementation "com.google.code.gson:gson:2.10"
 
     implementation 'androidx.core:core-ktx:1.9.0'
