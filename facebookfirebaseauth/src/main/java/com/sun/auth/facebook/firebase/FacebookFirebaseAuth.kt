@@ -67,7 +67,7 @@ object FacebookFirebaseAuth {
             "The FragmentActivity is currently unavailable!"
         }
         check(config != null) {
-            "You must call initFacebookAuth first!"
+            "You must call initFacebookFirebaseAuth first!"
         }
         authClient = AuthClient(
             activity,

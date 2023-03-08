@@ -10,7 +10,7 @@ import com.google.gson.reflect.TypeToken
 import com.sun.auth.credentials.utils.PREF_ENCRYPTED_FILE_NAME
 import com.sun.auth.credentials.utils.PREF_NORMAL_FILE_NAME
 
-class SharedPrefApiImpl(context: Context, private val gson: Gson) : SharedPrefApi {
+internal class SharedPrefApiImpl(context: Context, private val gson: Gson) : SharedPrefApi {
     private val sharedPreferences by lazy {
         try {
             val masterKeyAlias = MasterKey.Builder(context)

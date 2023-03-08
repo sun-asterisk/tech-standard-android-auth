@@ -22,3 +22,6 @@ include ':googleauth'
 include ':googlefirebaseauth'
 include ':facebookauth'
 include ':facebookfirebaseauth'
+
+if (!System.env.JITPACK)
+    include ':app'
