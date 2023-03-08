@@ -11,11 +11,7 @@ package com.sun.auth.credentials.repositories.model
  *      override val crAccessToken: String
  *          get() = accessToken.orEmpty()
  *      override var crRefreshToken: String? = null
- *          get() = refreshToken.orEmpty()
- *          set(value) {
- *              if (field == value) return
- *              field = value
- *          }
+ *          get() = refreshToken ?: field
  *  }
  * ```
  */

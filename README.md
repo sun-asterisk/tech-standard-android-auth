@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/sun-asterisk/tech-standard-android-auth.svg)](https://jitpack.io/#sun-asterisk/tech-standard-android-auth)
+
 # tech-standard-android-auth
 
 This is repo contains multiple helper modules which help you quickly adapt your Authentication
@@ -49,7 +51,24 @@ Feel free to make a pull request. Make sure your code is formatted and fixed lin
 
 1. Clean project first to copy team-props git-hooks
 2. Pull and checkout from `develop` branch
-3. A commit message must be have one of these prefixes [add|modify|fix|revert|hotfix], Ex: [Add] README.md
+3. A commit message must be have one of these prefixes [add|modify|fix|revert|hotfix], Ex: [Modify] README.md
 4. To auto format code, run `./gradlew ktlintFormat`
 5. To check lint issues, run `./gradlew detekt`
 See all reports in `reports` folder.
+
+## License
+```
+Copyright 2023 Sun-Asterisk.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```

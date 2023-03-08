@@ -43,12 +43,12 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.sun-asterisk.tech-standard-android-auth:core:master-SNAPSHOT'
-    implementation 'com.github.sun-asterisk.tech-standard-android-auth:credentialsauth:master-SNAPSHOT'
-    implementation 'com.github.sun-asterisk.tech-standard-android-auth:googleauth:master-SNAPSHOT'
-    implementation 'com.github.sun-asterisk.tech-standard-android-auth:googlefirebaseauth:master-SNAPSHOT'
-    implementation 'com.github.sun-asterisk.tech-standard-android-auth:facebookauth:master-SNAPSHOT'
-    implementation 'com.github.sun-asterisk.tech-standard-android-auth:facebookfirebaseauth:master-SNAPSHOT'
+    implementation project(':core')
+    implementation project(':credentialsauth')
+    implementation project(':facebookauth')
+    implementation project(':facebookfirebaseauth')
+    implementation project(':googleauth')
+    implementation project(':googlefirebaseauth')
 
     implementation "com.google.code.gson:gson:2.10"
 

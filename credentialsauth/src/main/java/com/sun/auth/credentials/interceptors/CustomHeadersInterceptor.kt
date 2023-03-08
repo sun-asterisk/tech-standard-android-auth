@@ -5,7 +5,7 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 /**
- * Add custom header to your request.
+ * Add custom headers to your request.
  * ```kt
  *    Accept-Language: en-US,en;q=0.5
  *    Accept-Encoding: gzip, deflate, br
