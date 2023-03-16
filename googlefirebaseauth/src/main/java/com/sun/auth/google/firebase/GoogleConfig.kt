@@ -2,7 +2,7 @@ package com.sun.auth.google.firebase
 
 import com.sun.auth.core.ConfigFunction
 
-class GoogleConfig {
+class GoogleConfig internal constructor() {
     /**
      * The web client id, see [this link](https://firebase.google.com/docs/auth/android/google-signin?authuser=0#authenticate_with_firebase) for how to get.
      */

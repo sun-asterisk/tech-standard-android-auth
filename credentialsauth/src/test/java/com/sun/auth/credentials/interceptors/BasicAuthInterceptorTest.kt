@@ -1,18 +1,16 @@
-package com.sun.auth.credentials
+package com.sun.auth.credentials.interceptors
 
-import com.sun.auth.base.BaseApiTest
-import com.sun.auth.credentials.interceptors.CustomHeadersInterceptor
-import okhttp3.Headers
+import com.sun.auth.credentials.base.BaseApiTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
-import org.junit.Assert.* // ktlint-disable no-wildcard-imports
+import org.junit.Assert.*
 import org.junit.Test
 
-class CustomHeadersInterceptorTest : BaseApiTest() {
-    private lateinit var interceptor: CustomHeadersInterceptor
+class BasicAuthInterceptorTest : BaseApiTest() {
+    private val basicAuthen = "BasicAuthen"
     private val emptyResponse = "{}"
     private val request by lazy { Request.Builder().url(mockServer.url("/")).build() }
     private val mockResponse by lazy {
@@ -24,32 +22,28 @@ class CustomHeadersInterceptorTest : BaseApiTest() {
             .body(emptyResponse.toResponseBody(("text/plain; charset=utf-8").toMediaType()))
             .build()
     }
+    private lateinit var interceptor: BasicAuthInterceptor
 
     @Test
     fun intercepted() {
-        val headers = Headers.Builder()
-            .add("header_1", "header_1_value")
-            .build()
-        interceptor = CustomHeadersInterceptor(headers)
+        interceptor = BasicAuthInterceptor(basicAuthen)
         val client = clientBuilder.addInterceptor(interceptor)
             .addInterceptor { chain ->
-                val addedHeader = chain.request().headers["header_1"]
+                val addedHeader = chain.request().headers["Authorization"]
                 assertNotNull(addedHeader)
-                assertEquals(addedHeader, "header_1_value")
+                assertEquals(addedHeader, basicAuthen)
                 mockResponse
             }.build()
-
         val response = client.newCall(request).execute()
         assertEquals(response, mockResponse)
     }
 
     @Test
     fun noIntercepted() {
-        val client = clientBuilder
-            .addInterceptor { chain ->
-                assertNull(chain.request().headers["header_1"])
-                mockResponse
-            }.build()
+        val client = clientBuilder.addInterceptor { chain ->
+            assertNull(chain.request().headers["Authorization"])
+            mockResponse
+        }.build()
 
         val response = client.newCall(request).execute()
         assertEquals(response, mockResponse)

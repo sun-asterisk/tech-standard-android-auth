@@ -1,4 +1,4 @@
-package com.sun.auth.base
+package com.sun.auth.credentials.base
 
 import org.junit.After
 import org.junit.Before

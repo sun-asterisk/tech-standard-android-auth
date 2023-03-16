@@ -1,7 +1,6 @@
-package com.sun.auth.credentials
+package com.sun.auth.credentials.repositories.local
 
-import com.sun.auth.base.BaseUnitTest
-import com.sun.auth.credentials.repositories.local.AuthLocalDataSource
+import com.sun.auth.credentials.base.BaseUnitTest
 import com.sun.auth.credentials.repositories.local.api.SharedPrefApi
 import com.sun.auth.credentials.repositories.model.AuthToken
 import com.sun.auth.credentials.utils.PREF_AUTH_TOKEN
@@ -11,7 +10,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.Assert.assertEquals
+import org.junit.Assert.*
 import org.junit.Test
 
 class AuthLocalDataSourceTest : BaseUnitTest() {
