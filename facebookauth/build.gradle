@@ -33,12 +33,7 @@ android {
 
 dependencies {
     implementation project(':core')
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    testImplementation 'io.mockk:mockk:1.13.4'
-    testImplementation 'io.mockk:mockk-android:1.13.3'
+    with defaultDependencies
 
     api 'com.facebook.android:facebook-login:latest.release'
 }
