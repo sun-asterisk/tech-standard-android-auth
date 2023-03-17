@@ -1,8 +1,7 @@
-package com.sun.auth.credentials
+package com.sun.auth.credentials.repositories
 
 import com.google.gson.Gson
-import com.sun.auth.base.BaseUnitTest
-import com.sun.auth.credentials.repositories.AuthRepositoryImpl
+import com.sun.auth.credentials.base.BaseUnitTest
 import com.sun.auth.credentials.repositories.local.AuthLocalDataSource
 import com.sun.auth.credentials.repositories.model.AuthToken
 import com.sun.auth.credentials.repositories.remote.AuthRemoteDataSource

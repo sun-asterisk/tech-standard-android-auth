@@ -1,18 +1,53 @@
+import io.gitlab.arturbosch.detekt.Detekt
+import io.gitlab.arturbosch.detekt.DetektPlugin
+import io.gitlab.arturbosch.detekt.report.ReportMergeTask
+
 buildscript {
-    apply from: "$rootDir/team-props/git-hooks.gradle.kts"
+    apply from: "$rootDir/team-props/git-hooks/git-hooks.gradle.kts"
     dependencies {
         classpath 'com.google.gms:google-services:4.3.15'
-        classpath 'io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.22.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
 plugins {
-    id 'com.android.application' version '7.3.1' apply false
-    id 'com.android.library' version '7.3.1' apply false
-    id 'org.jetbrains.kotlin.android' version '1.7.20' apply false
+    id 'com.android.application' version '7.4.1' apply false
+    id 'com.android.library' version '7.4.1' apply false
+    id 'org.jetbrains.kotlin.android' version '1.8.10' apply false
+    id 'io.gitlab.arturbosch.detekt' version '1.22.0' apply false
 }
 
 tasks.register("clean", Delete) {
     delete(rootProject.buildDir)
 }
+
+tasks.register("reportMerge", ReportMergeTask) {
+    output = project.layout.buildDirectory.file("reports/detekt/merge.xml")
+}
+
+allprojects {
+    apply from: "$rootDir/team-props/formatting/ktlint.gradle"
+    apply from: "$rootDir/ext.gradle"
+    apply plugin: "io.gitlab.arturbosch.detekt"
+
+    tasks.withType(Detekt).configureEach {
+        config.setFrom("$rootDir/team-props/lint/detekt/detekt.yml")
+        jvmTarget = "1.8"
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
+        }
+    }
+
+    plugins.withType(DetektPlugin) {
+        tasks.withType(Detekt) { detektTask ->
+            finalizedBy(reportMerge)
+
+            reportMerge.configure { mergeTask ->
+                mergeTask.input.from(detektTask.xmlReportFile)
+            }
+        }
+    }
+}
+
+

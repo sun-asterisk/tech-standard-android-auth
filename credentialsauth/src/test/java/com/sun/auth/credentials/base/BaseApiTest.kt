@@ -1,4 +1,4 @@
-package com.sun.auth.base
+package com.sun.auth.credentials.base
 
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockWebServer

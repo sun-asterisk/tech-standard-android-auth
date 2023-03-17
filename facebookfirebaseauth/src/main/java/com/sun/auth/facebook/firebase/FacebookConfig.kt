@@ -4,7 +4,7 @@ import android.content.Context
 import com.facebook.FacebookSdk
 import com.sun.auth.core.ConfigFunction
 
-class FacebookConfig {
+class FacebookConfig internal constructor() {
     /**
      * The list of read permissions, [see detail here](https://developers.facebook.com/docs/graph-api/overview/access-levels/)
      *

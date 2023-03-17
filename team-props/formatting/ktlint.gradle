@@ -14,7 +14,7 @@ task ktlintCheck(type: JavaExec, group: "verification") {
     description = "Check Kotlin code style."
     classpath = configurations.ktlint
     mainClass.set("com.pinterest.ktlint.Main")
-    args "**/*.kt", "--reporter=html,output=$rootDir/reports/ktlint/ktlint.html"
+    args "**/*.kt", "--reporter=html,output=$rootDir/build/reports/ktlint/ktlint.html"
     // see https://pinterest.github.io/ktlint/install/cli/#command-line-usage for more information
 }
 
