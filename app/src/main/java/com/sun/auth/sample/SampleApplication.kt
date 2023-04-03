@@ -10,7 +10,7 @@ import com.sun.auth.facebook.firebase.initFacebookFirebaseAuth
 import com.sun.auth.facebook.standard.initFacebookAuth
 import com.sun.auth.google.firebase.initGoogleAuth
 import com.sun.auth.google.standard.initGoogleAuth
-import com.sun.auth.sample.credentials.Token
+import com.sun.auth.sample.model.Token
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 

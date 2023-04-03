@@ -18,5 +18,8 @@
     <string name="sample_username">user1234</string>
     <string name="sample_password">passwordRequired@123</string>
     <string name="link_account">Link Account</string>
+    <string name="biometric">Biometric</string>
+    <string name="sign_in_with_biometric">Sign in with biometric</string>
+    <string name="enable_biometric">Enable Biometric</string>
 
 </resources>

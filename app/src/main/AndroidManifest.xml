@@ -25,6 +25,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".biometric.BiometricLoginActivity"
+            android:exported="false" />
+        <activity
             android:name=".credentials.CredentialsAuthActivity"
             android:exported="false" />
         <activity

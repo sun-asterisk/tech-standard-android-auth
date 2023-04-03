@@ -3,6 +3,7 @@ package com.sun.auth.sample
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.sun.auth.sample.biometric.BiometricLoginActivity
 import com.sun.auth.sample.credentials.CredentialsAuthActivity
 import com.sun.auth.sample.databinding.ActivityMainBinding
 import com.sun.auth.sample.facebook.firebase.FacebookFirebaseAuthActivity
@@ -22,6 +23,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupViews() {
         binding.credential.setOnClickListener {
             navigateTo(CredentialsAuthActivity::class.java)
+        }
+        binding.biometric.setOnClickListener {
+            navigateTo(BiometricLoginActivity::class.java)
         }
         binding.google.setOnClickListener {
             navigateTo(GoogleAuthActivity::class.java)

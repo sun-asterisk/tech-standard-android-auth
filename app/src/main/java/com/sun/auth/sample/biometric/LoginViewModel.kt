@@ -1,4 +1,4 @@
-package com.sun.auth.sample.credentials
+package com.sun.auth.sample.biometric
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,25 +14,29 @@ import kotlinx.coroutines.launch
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 
-class CredentialsAuthViewModel : ViewModel() {
+class LoginViewModel : ViewModel() {
 
-    private val _signInFormState = MutableLiveData<SignInFormState>()
-    val signInFormState: LiveData<SignInFormState> = _signInFormState
+    private val _signInFormState = MutableLiveData<LoginFormState>()
+    val signInFormState: LiveData<LoginFormState> = _signInFormState
 
-    private val _credentialsAuthResult = MutableLiveData<AuthResult>()
-    val credentialsAuthResult: LiveData<AuthResult> = _credentialsAuthResult
+    private val _credentialsAuthResult = MutableLiveData<LoginResult>()
+    val credentialsAuthResult: LiveData<LoginResult> = _credentialsAuthResult
 
-    private val _refreshTokenResult = MutableLiveData<AuthResult?>()
-    val refreshTokenResult: LiveData<AuthResult?> = _refreshTokenResult
+    private val _refreshTokenResult = MutableLiveData<LoginResult?>()
+    val refreshTokenResult: LiveData<LoginResult?> = _refreshTokenResult
+
+    private val _userToken = MutableLiveData<Token?>()
+    val userToken: LiveData<Token?> = _userToken
 
     fun signIn(username: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
             CredentialsAuth.signIn(
-                requestBody = SignInRequest(username, password),
+                requestBody = LoginRequest(username, password),
                 callback = object : AuthCallback<Token> {
                     override fun onResult(data: Token?, error: Throwable?) {
+                        updateToken(data)
                         _credentialsAuthResult.postValue(
-                            AuthResult(success = data, error = error),
+                            LoginResult(token = data, error = error),
                         )
                     }
                 },
@@ -40,16 +44,21 @@ class CredentialsAuthViewModel : ViewModel() {
         }
     }
 
+    fun updateToken(data: Token?) {
+        _userToken.postValue(data)
+    }
+
     fun getToken(): Token? {
-        return CredentialsAuth.getToken()
+        return _userToken.value ?: CredentialsAuth.getToken()
     }
 
     fun signOut(callback: () -> Unit) {
+        _userToken.value = null
         CredentialsAuth.signOut(callback)
     }
 
     fun isSignedIn(): Boolean {
-        return CredentialsAuth.isSignedIn<Token>()
+        return _userToken.value != null || CredentialsAuth.isSignedIn<Token>()
     }
 
     // Sample for manually refresh token.
@@ -60,7 +69,7 @@ class CredentialsAuthViewModel : ViewModel() {
                 callback = object : AuthCallback<Token> {
                     override fun onResult(data: Token?, error: Throwable?) {
                         _refreshTokenResult.postValue(
-                            AuthResult(success = data, error = error),
+                            LoginResult(token = data, error = error),
                         )
                     }
                 },
@@ -70,11 +79,11 @@ class CredentialsAuthViewModel : ViewModel() {
 
     fun signInDataChanged(username: String, password: String) {
         if (!isUserNameValid(username)) {
-            _signInFormState.value = SignInFormState(usernameError = R.string.invalid_username)
+            _signInFormState.value = LoginFormState(usernameError = R.string.invalid_username)
         } else if (!isPasswordValid(password)) {
-            _signInFormState.value = SignInFormState(passwordError = R.string.invalid_password)
+            _signInFormState.value = LoginFormState(passwordError = R.string.invalid_password)
         } else {
-            _signInFormState.value = SignInFormState(isDataValid = true)
+            _signInFormState.value = LoginFormState(isDataValid = true)
         }
     }
 

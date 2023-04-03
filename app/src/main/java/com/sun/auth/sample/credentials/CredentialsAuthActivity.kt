@@ -1,17 +1,16 @@
 package com.sun.auth.sample.credentials
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModelProvider
 import com.sun.auth.sample.R
 import com.sun.auth.sample.ViewModelFactory
 import com.sun.auth.sample.databinding.ActivityCredentialsAuthBinding
+import com.sun.auth.sample.model.Token
 
 class CredentialsAuthActivity : AppCompatActivity() {
 
@@ -32,7 +31,7 @@ class CredentialsAuthActivity : AppCompatActivity() {
 
     private fun setupViews() {
         switchUi()
-        binding.username.afterTextChanged {
+        binding.username.doAfterTextChanged {
             credentialsAuthViewModel.signInDataChanged(
                 binding.username.text.toString(),
                 binding.password.text.toString(),
@@ -40,7 +39,7 @@ class CredentialsAuthActivity : AppCompatActivity() {
         }
 
         binding.password.apply {
-            afterTextChanged {
+            doAfterTextChanged {
                 credentialsAuthViewModel.signInDataChanged(
                     binding.username.text.toString(),
                     binding.password.text.toString(),
@@ -133,23 +132,4 @@ class CredentialsAuthActivity : AppCompatActivity() {
         Toast.makeText(applicationContext, getString(R.string.signin_failed), Toast.LENGTH_SHORT)
             .show()
     }
-}
-
-/**
- * Extension function to simplify setting an afterTextChanged action to EditText components.
- */
-fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
-    this.addTextChangedListener(object : TextWatcher {
-        override fun afterTextChanged(editable: Editable?) {
-            afterTextChanged.invoke(editable.toString())
-        }
-
-        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-            // Do nothing
-        }
-
-        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-            // Do nothing
-        }
-    })
 }

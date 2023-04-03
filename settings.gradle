@@ -21,6 +21,8 @@ include ':googleauth'
 include ':googlefirebaseauth'
 include ':facebookauth'
 include ':facebookfirebaseauth'
+include ':biometricauth'
 
 if (!System.env.JITPACK)
     include ':app'
+
