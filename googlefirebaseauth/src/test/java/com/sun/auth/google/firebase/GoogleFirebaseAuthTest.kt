@@ -36,7 +36,7 @@ class GoogleFirebaseAuthTest {
     @Test
     fun signOut() {
         GoogleFirebaseAuth.signOut()
-        verify { authClient.signOut(false) }
+        verify { authClient.signOut(false, null) }
     }
 
     @Test

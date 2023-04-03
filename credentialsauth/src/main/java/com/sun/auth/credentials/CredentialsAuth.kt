@@ -72,7 +72,7 @@ object CredentialsAuth {
     /**
      * SignIn user with given info.
      * @param requestBody Request body to send with, `null` if nothing.
-     * @param callback Success or failure.
+     * @param callback Success or failure callback.
      */
     suspend fun <T : AuthToken> signIn(requestBody: Any?, callback: AuthCallback<T>) {
         try {

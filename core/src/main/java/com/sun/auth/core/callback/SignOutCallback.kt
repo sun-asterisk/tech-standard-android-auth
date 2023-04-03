@@ -1,4 +1,4 @@
-package com.sun.auth.google.standard
+package com.sun.auth.core.callback
 
 /**
  * Interface definition for a callback to be invoked when do sign out via Google authentication.

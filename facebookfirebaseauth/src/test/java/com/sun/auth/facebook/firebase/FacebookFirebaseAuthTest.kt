@@ -44,7 +44,7 @@ class FacebookFirebaseAuthTest {
     @Test
     fun signOut() {
         FacebookFirebaseAuth.signOut()
-        verify { authClient.signOut(false) }
+        verify { authClient.signOut(false, null) }
     }
 
     @Test

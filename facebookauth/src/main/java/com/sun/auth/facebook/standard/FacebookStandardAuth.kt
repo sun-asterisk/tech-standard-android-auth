@@ -6,6 +6,8 @@ import androidx.fragment.app.FragmentActivity
 import com.facebook.AccessToken
 import com.facebook.Profile
 import com.facebook.login.widget.LoginButton
+import com.sun.auth.core.callback.SignInCallback
+import com.sun.auth.core.callback.SignOutCallback
 import com.sun.auth.core.weak
 
 @Suppress("Unused")
@@ -26,38 +28,36 @@ object FacebookStandardAuth {
     }
 
     /**
-     * Init the Facebook authentication with callbacks.
+     * Init the Facebook authentication with callbacks. Call it before Fragment STARTED state.
      * @param fragment The current [Fragment].
      * @param signInCallback The sign in callback.
-     * @param signOutCallback The sign out callback.
      */
     @JvmStatic
-    fun initialize(
-        fragment: Fragment,
-        signInCallback: SignInCallback? = null,
-        signOutCallback: SignOutCallback? = null,
-    ) {
-        check(fragment.activity == null || fragment.activity?.isFinishing == true) {
+    fun initialize(fragment: Fragment, signInCallback: SignInCallback<AccessToken>? = null) {
+        check(fragment.activity != null || fragment.activity?.isFinishing != true) {
             "The FragmentActivity this fragment is currently associated with is unavailable!"
         }
-        initialize(
-            activity = fragment.requireActivity(),
+        check(config != null) {
+            "You must call initFacebookAuth first!"
+        }
+        authClient = AuthClient(
+            boundActivity = fragment.requireActivity(),
+            config = config!!,
             signInCallback = signInCallback,
-            signOutCallback = signOutCallback,
-        )
+        ).apply {
+            fragment.lifecycle.addObserver(this)
+        }
     }
 
     /**
-     * Init the Facebook authentication with callbacks.
+     * Init the Facebook authentication with callbacks. Call it before Activity STARTED state.
      * @param activity The current [FragmentActivity].
      * @param signInCallback The sign in callback.
-     * @param signOutCallback The sign out callback.
      */
     @JvmStatic
     fun initialize(
         activity: FragmentActivity,
-        signInCallback: SignInCallback? = null,
-        signOutCallback: SignOutCallback? = null,
+        signInCallback: SignInCallback<AccessToken>? = null,
     ) {
         check(!activity.isFinishing) {
             "The FragmentActivity is currently unavailable!"
@@ -66,10 +66,9 @@ object FacebookStandardAuth {
             "You must call initFacebookAuth first!"
         }
         authClient = AuthClient(
-            activity,
-            config!!,
-            signInCallback,
-            signOutCallback,
+            boundActivity = activity,
+            config = config!!,
+            signInCallback = signInCallback,
         ).apply {
             activity.lifecycle.addObserver(this)
         }
@@ -103,9 +102,10 @@ object FacebookStandardAuth {
 
     /**
      * Sign out the current account.
+     * @param signOutCallback: The sign out callback.
      */
-    fun signOut() {
-        authClient?.signOut(false)
+    fun signOut(signOutCallback: SignOutCallback? = null) {
+        authClient?.signOut(false, signOutCallback)
     }
 
     /**

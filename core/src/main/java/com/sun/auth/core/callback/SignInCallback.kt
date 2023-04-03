@@ -1,18 +1,16 @@
-package com.sun.auth.google.standard
-
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+package com.sun.auth.core.callback
 
 /**
  * Interface definition for a callback to be invoked when do sign in via Google authentication
  */
-interface SignInCallback {
+interface SignInCallback<T> {
     /**
      * Sign in callback with data or error.
-     * @param account The [GoogleSignInAccount] data, `null` if there is an error occurs.
+     * @param data The response data, `null` if there is an error occurs.
      * @param error The [Throwable] when sign in error, it is `nullable`.
      */
     fun onResult(
-        account: GoogleSignInAccount? = null,
+        data: T? = null,
         error: Throwable? = null,
     )
 }

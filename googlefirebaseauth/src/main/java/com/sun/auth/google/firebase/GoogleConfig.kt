@@ -11,12 +11,12 @@ class GoogleConfig internal constructor() {
     /**
      * Setting [One Tap Sign In](https://firebase.google.com/docs/auth/android/google-signin?authuser=0#authenticate_with_firebase), default is true.
      */
-    var enableOneTapSignIn = true
+    var enableOneTapSignIn = false
 
     /**
      * To prevent a new account being created when the user has an existing account registered with the application, default is true.
      */
-    var enableFilterByAuthorizedAccounts = true
+    var enableFilterByAuthorizedAccounts = false
 
     /**
      * To enable linking multi social accounts.

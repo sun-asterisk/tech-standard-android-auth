@@ -11,12 +11,13 @@ import com.google.firebase.auth.* // ktlint-disable no-wildcard-imports
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.sun.auth.core.* // ktlint-disable no-wildcard-imports
+import com.sun.auth.core.callback.SignInCallback
+import com.sun.auth.core.callback.SignOutCallback
 
 internal class AuthClient(
     boundActivity: FragmentActivity,
     private val config: FacebookConfig,
-    private val signInCallback: SignInCallback?,
-    private val signOutCallback: SignOutCallback?,
+    private val signInCallback: SignInCallback<AuthResult>?,
 ) : SocialAuth(boundActivity) {
     private val firebaseAuth by lazy { Firebase.auth }
     private val callbackManager by lazy { CallbackManager.Factory.create() }
@@ -96,7 +97,7 @@ internal class AuthClient(
         return getUser() != null
     }
 
-    override fun signOut(revokeAccess: Boolean) {
+    override fun signOut(revokeAccess: Boolean, signOutCallback: SignOutCallback?) {
         try {
             facebookInstance.logOut()
             firebaseAuth.signOut()
@@ -145,7 +146,7 @@ internal class AuthClient(
     private fun signInWithFirebase(credential: AuthCredential) {
         firebaseAuth.signInWithCredential(credential)
             .addOnSuccessListener { data ->
-                signInCallback?.onResult(authResult = data)
+                signInCallback?.onResult(data = data)
             }.addOnFailureListener {
                 if (it is FirebaseAuthInvalidCredentialsException) {
                     signInCallback?.onResult(error = InvalidCredentialsException(it))
@@ -157,7 +158,7 @@ internal class AuthClient(
 
     private fun linkWithCurrentAccount(credential: AuthCredential) {
         firebaseAuth.currentUser?.linkWithCredential(credential)?.addOnSuccessListener { data ->
-            signInCallback?.onResult(authResult = data)
+            signInCallback?.onResult(data = data)
         }?.addOnFailureListener { error ->
             if (error is FirebaseAuthUserCollisionException) {
                 signInWithFirebase(credential)
