@@ -35,10 +35,7 @@ class GoogleStandardAuthTest {
     @Test
     fun signOut() {
         GoogleStandardAuth.signOut(false)
-        verify { authClient.signOut(false) }
-
-        GoogleStandardAuth.signOut(true)
-        verify { authClient.signOut(true) }
+        verify { authClient.signOut(false, null) }
     }
 
     @Test
@@ -49,7 +46,8 @@ class GoogleStandardAuthTest {
 
     @Test
     fun showOneTapSignIn() {
-        GoogleStandardAuth.showOneTapSignIn()
-        verify { authClient.showOneTapSignIn() }
+        val oneTapSignInCallback = mockk<OneTapSignInCallback>()
+        GoogleStandardAuth.showOneTapSignIn(oneTapSignInCallback)
+        verify { authClient.showOneTapSignIn(oneTapSignInCallback) }
     }
 }

@@ -7,15 +7,14 @@ import com.facebook.* // ktlint-disable no-wildcard-imports
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
-import com.sun.auth.core.CancellationAuthException
-import com.sun.auth.core.SocialAuth
-import com.sun.auth.core.SocialAuthException
+import com.sun.auth.core.*
+import com.sun.auth.core.callback.SignInCallback
+import com.sun.auth.core.callback.SignOutCallback
 
 internal class AuthClient(
     boundActivity: FragmentActivity,
     private val config: FacebookConfig,
-    private val signInCallback: SignInCallback?,
-    private val signOutCallback: SignOutCallback?,
+    private val signInCallback: SignInCallback<AccessToken>?,
 ) : SocialAuth(boundActivity) {
     private val callbackManager by lazy { CallbackManager.Factory.create() }
     private val facebookInstance by lazy { LoginManager.getInstance() }
@@ -28,7 +27,7 @@ internal class AuthClient(
                         currentProfile: Profile?,
                     ) {
                         Profile.setCurrentProfile(currentProfile)
-                        signInCallback?.onResult(accessToken = result.accessToken)
+                        signInCallback?.onResult(data = result.accessToken)
                         stopTracking()
                     }
                 }
@@ -47,7 +46,7 @@ internal class AuthClient(
     private val facebookLoginStatusCallback by lazy {
         object : LoginStatusCallback {
             override fun onCompleted(accessToken: AccessToken) {
-                signInCallback?.onResult(accessToken = accessToken)
+                signInCallback?.onResult(data = accessToken)
             }
 
             override fun onFailure() {
@@ -105,7 +104,7 @@ internal class AuthClient(
         return accessToken != null && !accessToken.isExpired
     }
 
-    override fun signOut(revokeAccess: Boolean) {
+    override fun signOut(revokeAccess: Boolean, signOutCallback: SignOutCallback?) {
         try {
             facebookInstance.logOut()
             signOutCallback?.onResult()

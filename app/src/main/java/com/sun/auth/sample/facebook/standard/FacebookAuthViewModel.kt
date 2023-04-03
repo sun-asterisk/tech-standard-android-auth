@@ -6,9 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.facebook.AccessToken
 import com.facebook.Profile
+import com.sun.auth.core.callback.SignInCallback
+import com.sun.auth.core.callback.SignOutCallback
 import com.sun.auth.facebook.standard.FacebookStandardAuth
-import com.sun.auth.facebook.standard.SignInCallback
-import com.sun.auth.facebook.standard.SignOutCallback
 import com.sun.auth.sample.SocialAuthResult
 
 class FacebookAuthViewModel : ViewModel() {
@@ -23,7 +23,11 @@ class FacebookAuthViewModel : ViewModel() {
     }
 
     fun signOut() {
-        FacebookStandardAuth.signOut()
+        FacebookStandardAuth.signOut(object : SignOutCallback {
+            override fun onResult(error: Throwable?) {
+                _signOutState.value = error
+            }
+        })
     }
 
     fun isSignedIn(): Boolean {
@@ -37,14 +41,9 @@ class FacebookAuthViewModel : ViewModel() {
     fun initFacebookSignIn(activity: FragmentActivity) {
         FacebookStandardAuth.initialize(
             activity,
-            signInCallback = object : SignInCallback {
-                override fun onResult(accessToken: AccessToken?, error: Throwable?) {
-                    _signInState.value = SocialAuthResult(data = accessToken, error = error)
-                }
-            },
-            signOutCallback = object : SignOutCallback {
-                override fun onResult(error: Throwable?) {
-                    _signOutState.value = error
+            signInCallback = object : SignInCallback<AccessToken> {
+                override fun onResult(data: AccessToken?, error: Throwable?) {
+                    _signInState.value = SocialAuthResult(data = data, error = error)
                 }
             },
         )

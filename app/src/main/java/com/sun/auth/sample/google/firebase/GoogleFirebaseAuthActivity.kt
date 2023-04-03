@@ -42,6 +42,9 @@ class GoogleFirebaseAuthActivity : AppCompatActivity() {
 
     private fun initData() {
         googleAuthViewModel.initGoogleSignIn(this)
+        if (!googleAuthViewModel.isSignedIn()) {
+            googleAuthViewModel.showOneTapSignIn()
+        }
     }
 
     private fun observes() {

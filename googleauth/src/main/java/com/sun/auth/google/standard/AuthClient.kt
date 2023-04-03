@@ -16,16 +16,19 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
-import com.sun.auth.core.* // ktlint-disable no-wildcard-imports
+import com.sun.auth.core.CancellationAuthException
+import com.sun.auth.core.SocialAuth
+import com.sun.auth.core.SocialAuthException
+import com.sun.auth.core.UnexpectedAuthException
+import com.sun.auth.core.callback.SignInCallback
+import com.sun.auth.core.callback.SignOutCallback
 
 internal class AuthClient(
     boundActivity: FragmentActivity,
     private val config: GoogleConfig,
-    private val signInCallback: SignInCallback?,
-    private val signOutCallback: SignOutCallback?,
-    private val oneTapSignInCallback: OneTapSignInCallback?,
+    private val signInCallback: SignInCallback<GoogleSignInAccount>?,
 ) : SocialAuth(boundActivity) {
-
+    private var oneTapSignInCallback: OneTapSignInCallback? = null
     private val signInClient: GoogleSignInClient by lazy {
         verifyActivity()
         GoogleSignIn.getClient(activity!!, config.signInOptions)
@@ -56,10 +59,11 @@ internal class AuthClient(
         }
     }
 
-    fun showOneTapSignIn() {
+    fun showOneTapSignIn(callback: OneTapSignInCallback) {
         check(config.enableOneTapSignIn) {
             "You must enable OneTap SignIn from GoogleConfig"
         }
+        oneTapSignInCallback = callback
         val oneTapSignInRequest = BeginSignInRequest.builder().setGoogleIdTokenRequestOptions(
             BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                 .setSupported(true)
@@ -70,7 +74,7 @@ internal class AuthClient(
 
         oneTapClient.beginSignIn(oneTapSignInRequest)
             .addOnSuccessListener {
-                launchSignIn(it.pendingIntent)
+                launchOneTapSignIn(it.pendingIntent)
             }.addOnFailureListener {
                 oneTapSignInCallback?.onResult(error = SocialAuthException(it))
             }
@@ -98,7 +102,7 @@ internal class AuthClient(
             if (account == null) {
                 signInCallback?.onResult(error = UnexpectedAuthException())
             } else {
-                signInCallback?.onResult(account = account)
+                signInCallback?.onResult(data = account)
             }
         } catch (e: ApiException) {
             if (e.statusCode == Activity.RESULT_CANCELED) {
@@ -117,7 +121,7 @@ internal class AuthClient(
         return GoogleSignIn.getLastSignedInAccount(activity!!)
     }
 
-    override fun signOut(revokeAccess: Boolean) {
+    override fun signOut(revokeAccess: Boolean, signOutCallback: SignOutCallback?) {
         signInClient.signOut().addOnSuccessListener {
             if (revokeAccess) {
                 signInClient.revokeAccess().addOnCompleteListener {
@@ -131,12 +135,12 @@ internal class AuthClient(
         }
     }
 
-    private fun launchSignIn(pendingIntent: PendingIntent) {
+    private fun launchOneTapSignIn(pendingIntent: PendingIntent) {
         try {
             val intentSenderRequest = IntentSenderRequest.Builder(pendingIntent).build()
             oneTapSignInLauncher?.launch(intentSenderRequest)
         } catch (e: Exception) {
-            signInCallback?.onResult(error = SocialAuthException(e))
+            oneTapSignInCallback?.onResult(error = SocialAuthException(e))
         }
     }
 

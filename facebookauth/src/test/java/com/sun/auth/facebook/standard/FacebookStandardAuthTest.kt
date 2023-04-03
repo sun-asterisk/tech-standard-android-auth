@@ -43,7 +43,7 @@ class FacebookStandardAuthTest {
     @Test
     fun signOut() {
         FacebookStandardAuth.signOut()
-        verify { authClient.signOut(false) }
+        verify { authClient.signOut(false, null) }
     }
 
     @Test

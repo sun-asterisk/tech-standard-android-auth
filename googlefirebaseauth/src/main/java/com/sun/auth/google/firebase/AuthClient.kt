@@ -13,16 +13,17 @@ import com.google.android.gms.auth.api.identity.GetSignInIntentRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.* // ktlint-disable no-wildcard-imports
+import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.sun.auth.core.* // ktlint-disable no-wildcard-imports
+import com.sun.auth.core.*
+import com.sun.auth.core.callback.SignInCallback
+import com.sun.auth.core.callback.SignOutCallback
 
 class AuthClient(
     boundActivity: FragmentActivity,
     private val config: GoogleConfig,
-    private val signInCallback: SignInCallback?,
-    private val signOutCallback: SignOutCallback?,
+    private val signInCallback: SignInCallback<AuthResult>?,
 ) : SocialAuth(boundActivity) {
     private val signInClient: SignInClient by lazy {
         verifyActivity()
@@ -32,9 +33,6 @@ class AuthClient(
     private val firebaseAuth by lazy { Firebase.auth }
 
     override fun onCreate(owner: LifecycleOwner) {
-        if (config.enableOneTapSignIn && firebaseAuth.currentUser == null) {
-            showOneTapSignIn()
-        }
         signInLauncher = activity?.activityResultRegistry?.register(
             REQUEST_GOOGLE_SIGN_IN,
             owner,
@@ -91,7 +89,7 @@ class AuthClient(
         return firebaseAuth.currentUser
     }
 
-    override fun signOut(revokeAccess: Boolean) {
+    override fun signOut(revokeAccess: Boolean, signOutCallback: SignOutCallback?) {
         signInClient.signOut().addOnSuccessListener {
             firebaseAuth.signOut()
             signOutCallback?.onResult()
@@ -122,7 +120,7 @@ class AuthClient(
     private fun linkWithCurrentAccount(credential: AuthCredential) {
         firebaseAuth.currentUser?.linkWithCredential(credential)
             ?.addOnSuccessListener { data ->
-                signInCallback?.onResult(authResult = data)
+                signInCallback?.onResult(data = data)
             }?.addOnFailureListener { error ->
                 if (error is FirebaseAuthUserCollisionException) {
                     signInWithFirebase(credential)
@@ -135,7 +133,7 @@ class AuthClient(
     private fun signInWithFirebase(credential: AuthCredential) {
         firebaseAuth.signInWithCredential(credential)
             .addOnSuccessListener { data ->
-                signInCallback?.onResult(authResult = data)
+                signInCallback?.onResult(data = data)
             }.addOnFailureListener {
                 if (it is FirebaseAuthInvalidCredentialsException) {
                     signInCallback?.onResult(error = InvalidCredentialsException(it))
@@ -145,7 +143,10 @@ class AuthClient(
             }
     }
 
-    private fun showOneTapSignIn() {
+    fun showOneTapSignIn() {
+        check(config.enableOneTapSignIn) {
+            "You must enable OneTap SignIn from GoogleConfig"
+        }
         val oneTapSignInRequest = BeginSignInRequest.builder()
             .setGoogleIdTokenRequestOptions(
                 BeginSignInRequest.GoogleIdTokenRequestOptions.builder()

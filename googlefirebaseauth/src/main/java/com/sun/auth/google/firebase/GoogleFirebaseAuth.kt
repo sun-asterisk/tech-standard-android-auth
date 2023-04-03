@@ -3,11 +3,12 @@ package com.sun.auth.google.firebase
 import android.content.Context
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserInfo
-import com.sun.auth.core.PROVIDER_FACEBOOK
-import com.sun.auth.core.PROVIDER_GOOGLE
-import com.sun.auth.core.weak
+import com.sun.auth.core.*
+import com.sun.auth.core.callback.SignInCallback
+import com.sun.auth.core.callback.SignOutCallback
 
 @Suppress("Unused")
 object GoogleFirebaseAuth {
@@ -27,39 +28,34 @@ object GoogleFirebaseAuth {
     }
 
     /**
-     * Init the google authentication with callbacks.
+     * Init the google authentication with callbacks. Call it before Fragment STARTED state.
      * @param fragment The current [Fragment].
      * @param signInCallback The sign in callback.
-     * @param signOutCallback The sign out callback.
      */
     @JvmStatic
-    fun initialize(
-        fragment: Fragment,
-        signInCallback: SignInCallback? = null,
-        signOutCallback: SignOutCallback? = null,
-    ) {
-        check(fragment.activity == null || fragment.activity?.isFinishing == true) {
+    fun initialize(fragment: Fragment, signInCallback: SignInCallback<AuthResult>? = null) {
+        check(fragment.activity != null || fragment.activity?.isFinishing != true) {
             "The FragmentActivity this fragment is currently associated with is unavailable!"
         }
-        initialize(
-            activity = fragment.requireActivity(),
-            signInCallback = signInCallback,
-            signOutCallback = signOutCallback,
-        )
+        check(config != null) {
+            "You must call initGoogleAuth first!"
+        }
+        authClient = AuthClient(
+            fragment.requireActivity(),
+            config!!,
+            signInCallback,
+        ).apply {
+            fragment.lifecycle.addObserver(this)
+        }
     }
 
     /**
-     * Init the google authentication with callbacks.
+     * Init the google authentication with callbacks. Call it before Activity STARTED state.
      * @param activity The current [FragmentActivity].
      * @param signInCallback The sign in callback.
-     * @param signOutCallback The sign out callback.
      */
     @JvmStatic
-    fun initialize(
-        activity: FragmentActivity,
-        signInCallback: SignInCallback? = null,
-        signOutCallback: SignOutCallback? = null,
-    ) {
+    fun initialize(activity: FragmentActivity, signInCallback: SignInCallback<AuthResult>? = null) {
         check(!activity.isFinishing) {
             "The FragmentActivity is currently unavailable!"
         }
@@ -70,7 +66,6 @@ object GoogleFirebaseAuth {
             activity,
             config!!,
             signInCallback,
-            signOutCallback,
         ).apply {
             activity.lifecycle.addObserver(this)
         }
@@ -93,9 +88,10 @@ object GoogleFirebaseAuth {
 
     /**
      * Sign out the current account.
+     * @param signOutCallback The sign out callback.
      */
-    fun signOut() {
-        authClient?.signOut(false)
+    fun signOut(signOutCallback: SignOutCallback? = null) {
+        authClient?.signOut(false, signOutCallback)
     }
 
     /**
@@ -113,5 +109,14 @@ object GoogleFirebaseAuth {
      */
     fun getLinkedAccounts(provider: String): UserInfo? {
         return authClient?.getLinkedAccounts(provider)
+    }
+
+    /**
+     * Show OneTap SignIn UI.
+     *
+     * In some cases, this UI is disabled when user cancelled several times.
+     */
+    fun showOneTapSignIn() {
+        authClient?.showOneTapSignIn()
     }
 }

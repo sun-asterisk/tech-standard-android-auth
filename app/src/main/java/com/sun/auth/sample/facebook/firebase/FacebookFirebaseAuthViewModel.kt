@@ -8,9 +8,9 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserInfo
 import com.sun.auth.core.PROVIDER_FACEBOOK
+import com.sun.auth.core.callback.SignInCallback
+import com.sun.auth.core.callback.SignOutCallback
 import com.sun.auth.facebook.firebase.FacebookFirebaseAuth
-import com.sun.auth.facebook.firebase.SignInCallback
-import com.sun.auth.facebook.firebase.SignOutCallback
 import com.sun.auth.sample.SocialAuthResult
 
 class FacebookFirebaseAuthViewModel : ViewModel() {
@@ -25,7 +25,11 @@ class FacebookFirebaseAuthViewModel : ViewModel() {
     }
 
     fun signOut() {
-        FacebookFirebaseAuth.signOut()
+        FacebookFirebaseAuth.signOut(object : SignOutCallback {
+            override fun onResult(error: Throwable?) {
+                _signOutState.value = error
+            }
+        })
     }
 
     fun isSignedIn(): Boolean {
@@ -43,14 +47,9 @@ class FacebookFirebaseAuthViewModel : ViewModel() {
     fun initFacebookSignIn(activity: FragmentActivity) {
         FacebookFirebaseAuth.initialize(
             activity,
-            signInCallback = object : SignInCallback {
-                override fun onResult(authResult: AuthResult?, error: Throwable?) {
-                    _signInState.value = SocialAuthResult(data = authResult, error = error)
-                }
-            },
-            signOutCallback = object : SignOutCallback {
-                override fun onResult(error: Throwable?) {
-                    _signOutState.value = error
+            signInCallback = object : SignInCallback<AuthResult> {
+                override fun onResult(data: AuthResult?, error: Throwable?) {
+                    _signInState.value = SocialAuthResult(data = data, error = error)
                 }
             },
         )
