@@ -1,6 +1,7 @@
 package com.sun.auth.biometricauth
 
 import android.content.Context
+import android.util.Log
 import androidx.biometric.BiometricManager.*
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.Fragment
@@ -11,6 +12,7 @@ import com.sun.auth.biometricauth.BiometricError.ERROR_BIOMETRIC_NOT_SET
 import com.sun.auth.biometricauth.BiometricError.ERROR_NO_CIPHER_CREATED
 import com.sun.auth.biometricauth.BiometricError.MESSAGE_BIOMETRIC_MODE_IS_OFF
 import com.sun.auth.biometricauth.BiometricError.MESSAGE_BIOMETRIC_PROCESS_FAIL
+import com.sun.auth.biometricauth.BiometricError.MESSAGE_BIOMETRIC_UN_SUPPORTED
 import com.sun.auth.biometricauth.BiometricError.MESSAGE_NO_BIOMETRIC_SETTINGS
 import com.sun.auth.biometricauth.BiometricError.MESSAGE_NO_CIPHER_CREATED
 import com.sun.auth.biometricauth.CryptographyManagerImpl.Companion.BIOMETRIC_CYPHER_KEY
@@ -76,8 +78,12 @@ class BiometricHelper private constructor() {
      * @param cipher The cipher from [BiometricPrompt.CryptoObject] after [BiometricPrompt.AuthenticationResult] success.
      */
     fun <T> encryptAndPersistAuthenticationData(data: T, cipher: Cipher) {
-        val encryptedData = encryptData(data, cipher)
-        persistCiphertextWrapperToSharedPrefs(BIOMETRIC_CYPHER_KEY, encryptedData)
+        try {
+            val encryptedData = encryptData(data, cipher)
+            persistCiphertextWrapperToSharedPrefs(BIOMETRIC_CYPHER_KEY, encryptedData)
+        } catch (e: Exception) {
+            Log.e("x", "${e.printStackTrace()}")
+        }
     }
 
     /**
@@ -118,7 +124,7 @@ class BiometricHelper private constructor() {
         mode: BiometricMode,
         cipherTextWrapper: CiphertextWrapper?,
         promptInfo: BiometricPrompt.PromptInfo,
-        authenticators: Int = Authenticators.BIOMETRIC_STRONG,
+        authenticators: Int? = null,
         secretKey: String = BIOMETRIC_KEY_NAME,
         onError: ((code: Int?, message: String?) -> Unit)? = null,
         onSuccess: (result: BiometricPrompt.AuthenticationResult) -> Unit,
@@ -153,7 +159,7 @@ class BiometricHelper private constructor() {
         mode: BiometricMode,
         cipherTextWrapper: CiphertextWrapper?,
         promptInfo: BiometricPrompt.PromptInfo,
-        authenticators: Int = Authenticators.BIOMETRIC_STRONG,
+        authenticators: Int? = null,
         secretKey: String = BIOMETRIC_KEY_NAME,
         onError: ((code: Int?, message: String?) -> Unit)? = null,
         onSuccess: (result: BiometricPrompt.AuthenticationResult) -> Unit,
@@ -177,18 +183,35 @@ class BiometricHelper private constructor() {
         mode: BiometricMode,
         cipherTextWrapper: CiphertextWrapper?,
         promptInfo: BiometricPrompt.PromptInfo,
-        authenticators: Int,
+        authenticators: Int?,
         secretKey: String,
         onError: ((code: Int?, message: String?) -> Unit)?,
         onSuccess: (result: BiometricPrompt.AuthenticationResult) -> Unit,
     ) {
+        if (authenticators != null && !AuthenticatorUtils.isSupportedCombination(authenticators)) {
+            onError?.invoke(BIOMETRIC_ERROR_UNSUPPORTED, MESSAGE_BIOMETRIC_UN_SUPPORTED)
+            return
+        }
+
         if (mode != BiometricMode.ON && cipherTextWrapper == null) {
             onError?.invoke(ERROR_BIOMETRIC_MODE_IS_OFF, MESSAGE_BIOMETRIC_MODE_IS_OFF)
             return
         }
-        val context = fragment?.requireContext() ?: activity!!
+
+        // Verify required authenticators
+        val finalAuthenticators = if (promptInfo.allowedAuthenticators == 0) {
+            authenticators // default no set authenticators
+        } else {
+            if (promptInfo.allowedAuthenticators != authenticators) {
+                onError?.invoke(-1111, "PromptInfo allowedAuthenticators and authenticators are conflict")
+                return
+            } else {
+                authenticators
+            }
+        }
         try {
-            val canAuthenticate = from(context).canAuthenticate(authenticators)
+            val context = fragment?.requireContext() ?: activity!!
+            val canAuthenticate = from(context).canAuthenticate(finalAuthenticators!!)
             if (canAuthenticate == BIOMETRIC_SUCCESS) {
                 val cipher = if (mode == BiometricMode.ON) {
                     cryptographyManager.getInitializedCipherForEncryption(secretKey)

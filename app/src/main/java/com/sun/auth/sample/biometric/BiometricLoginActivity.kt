@@ -17,6 +17,7 @@ import com.sun.auth.sample.databinding.ActivityLoginBiometricBinding
 import com.sun.auth.sample.model.Token
 import javax.crypto.Cipher
 
+@Suppress("MagicNumber", "TooManyFunctions")
 class BiometricLoginActivity : AppCompatActivity() {
 
     private val loginViewModel: LoginViewModel by lazy {
@@ -50,7 +51,8 @@ class BiometricLoginActivity : AppCompatActivity() {
             subtitle = "Please complete biometric for authentication",
             description = "Complete Biometric for authentication",
             confirmationRequired = false,
-            negativeTextButton = "cancel",
+//            negativeTextButton = "cancel",
+            allowedAuthenticators = AUTHENTICATORS_EX_4,
         )
     }
 
@@ -60,8 +62,8 @@ class BiometricLoginActivity : AppCompatActivity() {
             mode = mode,
             cipherTextWrapper = cipherToken,
             promptInfo = getBiometricPrompt(),
-            authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL,
-            secretKey = "This is error",
+            authenticators = AUTHENTICATORS_EX_4,
+            secretKey = "your_secret_key_name",
             onError = ::doOnBiometricError,
             onSuccess = {
                 doOnBiometricSuccess(it, mode)
@@ -116,7 +118,17 @@ class BiometricLoginActivity : AppCompatActivity() {
             cipher = cipher,
             clazz = Token::class.java,
         )
-        loginViewModel.updateToken(token)
+        // TODO: replace with your spec logic
+        val usedToken = if (token != loginViewModel.getSavedToken()) {
+            // this must be refreshToken is called from the last cipher token is save
+            // so we should update cipher token and use the latest token.
+            val currentToken = loginViewModel.getSavedToken()
+            biometricHelper.encryptAndPersistAuthenticationData(currentToken, cipher)
+            currentToken
+        } else {
+            token
+        }
+        loginViewModel.updateCurrentToken(usedToken)
     }
 
     private fun encryptAndStoreServerToken(cipher: Cipher) {
@@ -220,7 +232,7 @@ class BiometricLoginActivity : AppCompatActivity() {
                 binding.tvId.text = "Updated: ${it.token?.accessToken}"
             }
         }
-        loginViewModel.userToken.observe(this) {
+        loginViewModel.currentToken.observe(this) {
             switchUi()
         }
     }
@@ -251,7 +263,26 @@ class BiometricLoginActivity : AppCompatActivity() {
             .show()
     }
 
+    @Suppress("UnusedPrivateMember")
     companion object {
         private const val KEY_CIPHER_TOKEN = "KEY_CIPHER_TOKEN"
+        private const val AUTHENTICATORS_EX_0 = 0 // no set for prompt nor processBiometric
+        private val AUTHENTICATORS_EX_1 = BiometricManager.Authenticators.BIOMETRIC_WEAK
+        private val AUTHENTICATORS_EX_2 = BiometricManager.Authenticators.BIOMETRIC_STRONG
+
+        // use 3 when android >= 30
+        private val AUTHENTICATORS_EX_3 = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+
+        // Crypto-based authentication is not supported for Class 2 (Weak) biometrics.
+        private val AUTHENTICATORS_EX_4 = BiometricManager.Authenticators.BIOMETRIC_WEAK or
+            BiometricManager.Authenticators.DEVICE_CREDENTIAL
+
+        // Do not use 5 on android API != 28, 29
+        private val AUTHENTICATORS_EX_5 = BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.DEVICE_CREDENTIAL
+
+        // Never use 6, it is invalid combination
+        private val AUTHENTICATORS_EX_6 = BiometricManager.Authenticators.BIOMETRIC_WEAK or
+            BiometricManager.Authenticators.BIOMETRIC_STRONG
     }
 }

@@ -28,4 +28,5 @@ object BiometricError {
      */
     const val MESSAGE_BIOMETRIC_PROCESS_FAIL = "Biometric authenticate process failed!"
     const val MESSAGE_NO_BIOMETRIC_SETTINGS = "Seems biometric is not set!"
+    const val MESSAGE_BIOMETRIC_UN_SUPPORTED = "The user can't authenticate because the specified options are incompatible with the current Android version."
 }

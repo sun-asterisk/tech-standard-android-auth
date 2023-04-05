@@ -1,5 +1,7 @@
 package com.sun.auth.biometricauth
 
+import android.os.Build
+import android.text.TextUtils
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -28,7 +30,7 @@ object BiometricPromptUtils {
         }
     }
 
-    fun createBiometricPrompt(
+    internal fun createBiometricPrompt(
         fragment: Fragment,
         doOnError: (errCode: Int?, errString: CharSequence?) -> Unit,
         doOnSuccess: (BiometricPrompt.AuthenticationResult) -> Unit,
@@ -41,7 +43,7 @@ object BiometricPromptUtils {
         )
     }
 
-    fun createBiometricPrompt(
+    internal fun createBiometricPrompt(
         activity: FragmentActivity,
         doOnError: (errCode: Int?, errString: CharSequence?) -> Unit,
         doOnSuccess: (BiometricPrompt.AuthenticationResult) -> Unit,
@@ -54,35 +56,54 @@ object BiometricPromptUtils {
         )
     }
 
+    /**
+     * Create Biometric PromptInfo object with specified options.
+     *
+     * @param title required, title of prompt.
+     * @param subtitle required, sub title of prompt.
+     * @param description required, description of prompt.
+     * @param confirmationRequired optional, Sets a system hint for whether to require explicit user
+     *  confirmation after a passive biometric (e.g. iris or face) has been recognized,
+     *  see [BiometricPrompt.PromptInfo.Builder.setConfirmationRequired].
+     * @param negativeTextButton The label to be used for the negative button on the prompt.
+     * @param allowedAuthenticators optional, Specifies the type(s) of authenticators that may be
+     *  invoked by BiometricPrompt to authenticate the user. See [BiometricPrompt.PromptInfo.Builder.setAllowedAuthenticators]
+     * @return Biometric PromptInfo object with specified options.
+     */
     fun createPromptInfo(
         title: String,
         subtitle: String,
         description: String,
         confirmationRequired: Boolean = false,
-        negativeTextButton: String,
+        negativeTextButton: String? = null,
+        allowedAuthenticators: Int = 0,
     ): BiometricPrompt.PromptInfo {
-        return BiometricPrompt.PromptInfo.Builder().apply {
-            setTitle(title)
-            setSubtitle(subtitle)
-            setDescription(description)
-            setConfirmationRequired(confirmationRequired)
-            setNegativeButtonText(negativeTextButton)
-        }.build()
-    }
+        if (!AuthenticatorUtils.isSupportedCombination(allowedAuthenticators)) {
+            throw IllegalArgumentException(
+                "Authenticator combination is unsupported " +
+                    "on API " + Build.VERSION.SDK_INT + ": " +
+                    AuthenticatorUtils.convertToString(allowedAuthenticators),
+            )
+        }
+        val isDeviceCredentialAllowed = if (allowedAuthenticators != 0) {
+            AuthenticatorUtils.isDeviceCredentialAllowed(allowedAuthenticators)
+        } else {
+            false
+        }
 
-    fun createPromptInfo(
-        title: String,
-        subtitle: String,
-        description: String,
-        confirmationRequired: Boolean = false,
-        authenticators: Int,
-    ): BiometricPrompt.PromptInfo {
+        require(!(TextUtils.isEmpty(negativeTextButton) && !isDeviceCredentialAllowed)) {
+            "Negative text must be set and non-empty."
+        }
+        require(!(!TextUtils.isEmpty(negativeTextButton) && isDeviceCredentialAllowed)) {
+            ("Negative text must not be set if device credential authentication is allowed.")
+        }
         return BiometricPrompt.PromptInfo.Builder().apply {
             setTitle(title)
             setSubtitle(subtitle)
             setDescription(description)
             setConfirmationRequired(confirmationRequired)
-            setAllowedAuthenticators(authenticators)
+            negativeTextButton?.let(::setNegativeButtonText)
+            allowedAuthenticators.let(::setAllowedAuthenticators)
         }.build()
     }
 }

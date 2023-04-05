@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 
+@Suppress("MagicNumber")
 class LoginViewModel : ViewModel() {
 
     private val _signInFormState = MutableLiveData<LoginFormState>()
@@ -25,8 +26,8 @@ class LoginViewModel : ViewModel() {
     private val _refreshTokenResult = MutableLiveData<LoginResult?>()
     val refreshTokenResult: LiveData<LoginResult?> = _refreshTokenResult
 
-    private val _userToken = MutableLiveData<Token?>()
-    val userToken: LiveData<Token?> = _userToken
+    private val _currentToken = MutableLiveData<Token?>()
+    val currentToken: LiveData<Token?> = _currentToken
 
     fun signIn(username: String, password: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -34,31 +35,33 @@ class LoginViewModel : ViewModel() {
                 requestBody = LoginRequest(username, password),
                 callback = object : AuthCallback<Token> {
                     override fun onResult(data: Token?, error: Throwable?) {
-                        updateToken(data)
-                        _credentialsAuthResult.postValue(
-                            LoginResult(token = data, error = error),
-                        )
+                        updateCurrentToken(data)
+                        _credentialsAuthResult.postValue(LoginResult(token = data, error = error))
                     }
                 },
             )
         }
     }
 
-    fun updateToken(data: Token?) {
-        _userToken.postValue(data)
+    fun updateCurrentToken(data: Token?) {
+        _currentToken.postValue(data)
     }
 
     fun getToken(): Token? {
-        return _userToken.value ?: CredentialsAuth.getToken()
+        return _currentToken.value ?: CredentialsAuth.getToken()
+    }
+
+    fun getSavedToken(): Token? {
+        return CredentialsAuth.getToken()
     }
 
     fun signOut(callback: () -> Unit) {
-        _userToken.value = null
+        _currentToken.value = null
         CredentialsAuth.signOut(callback)
     }
 
     fun isSignedIn(): Boolean {
-        return _userToken.value != null || CredentialsAuth.isSignedIn<Token>()
+        return _currentToken.value != null || CredentialsAuth.isSignedIn<Token>()
     }
 
     // Sample for manually refresh token.
@@ -68,9 +71,7 @@ class LoginViewModel : ViewModel() {
                 request = buildRefreshTokenRequest(),
                 callback = object : AuthCallback<Token> {
                     override fun onResult(data: Token?, error: Throwable?) {
-                        _refreshTokenResult.postValue(
-                            LoginResult(token = data, error = error),
-                        )
+                        _refreshTokenResult.postValue(LoginResult(token = data, error = error))
                     }
                 },
             )
