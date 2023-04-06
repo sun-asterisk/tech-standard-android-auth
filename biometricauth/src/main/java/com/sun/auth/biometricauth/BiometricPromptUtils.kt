@@ -70,6 +70,7 @@ object BiometricPromptUtils {
      *  invoked by BiometricPrompt to authenticate the user. See [BiometricPrompt.PromptInfo.Builder.setAllowedAuthenticators]
      * @return Biometric PromptInfo object with specified options.
      */
+    @Suppress("LongParameterList")
     fun createPromptInfo(
         title: String,
         subtitle: String,

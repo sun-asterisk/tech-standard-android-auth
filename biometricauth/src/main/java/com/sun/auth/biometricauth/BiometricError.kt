@@ -17,6 +17,7 @@ object BiometricError {
     const val ERROR_BIOMETRIC_MODE_IS_OFF = 101
 
     const val ERROR_BIOMETRIC_NOT_SET = 102
+    const val ERROR_AUTHENTICATOR_CONFLICT = 103
 
     const val MESSAGE_NO_CIPHER_CREATED = "No cipher is created!"
     const val MESSAGE_BIOMETRIC_MODE_IS_OFF = "Biometric mode is off!"
@@ -28,5 +29,8 @@ object BiometricError {
      */
     const val MESSAGE_BIOMETRIC_PROCESS_FAIL = "Biometric authenticate process failed!"
     const val MESSAGE_NO_BIOMETRIC_SETTINGS = "Seems biometric is not set!"
-    const val MESSAGE_BIOMETRIC_UN_SUPPORTED = "The user can't authenticate because the specified options are incompatible with the current Android version."
+    const val MESSAGE_BIOMETRIC_UN_SUPPORTED = "The user can't authenticate because the " +
+        "specified options are incompatible with the current Android version."
+    const val MESSAGE_AUTHENTICATORS_CONFLICT = "PromptInfo allowedAuthenticators and " +
+        "authenticators are conflict"
 }

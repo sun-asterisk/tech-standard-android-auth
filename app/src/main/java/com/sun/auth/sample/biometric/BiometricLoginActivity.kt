@@ -51,8 +51,8 @@ class BiometricLoginActivity : AppCompatActivity() {
             subtitle = "Please complete biometric for authentication",
             description = "Complete Biometric for authentication",
             confirmationRequired = false,
-//            negativeTextButton = "cancel",
-            allowedAuthenticators = AUTHENTICATORS_EX_4,
+            negativeTextButton = "cancel",
+            allowedAuthenticators = AUTHENTICATORS_EX_2,
         )
     }
 
@@ -62,7 +62,7 @@ class BiometricLoginActivity : AppCompatActivity() {
             mode = mode,
             cipherTextWrapper = cipherToken,
             promptInfo = getBiometricPrompt(),
-            authenticators = AUTHENTICATORS_EX_4,
+            authenticators = AUTHENTICATORS_EX_2,
             secretKey = "your_secret_key_name",
             onError = ::doOnBiometricError,
             onSuccess = {

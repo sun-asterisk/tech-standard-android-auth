@@ -2,6 +2,7 @@ package com.sun.auth.biometricauth
 
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import com.google.gson.Gson
 import java.security.KeyStore
@@ -10,6 +11,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
+@Suppress("InstanceOfCheckForException")
 internal class CryptographyManagerImpl(
     private val sharedPrefApi: SharedPrefApi,
     private val gson: Gson,
@@ -18,7 +20,15 @@ internal class CryptographyManagerImpl(
     override fun getInitializedCipherForEncryption(keyName: String): Cipher {
         val cipher = getCipher()
         val secretKey = getOrCreateSecretKey(keyName)
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        } catch (e: Exception) {
+            // retry create new cipher when a (new) biometric added or removed
+            if (e is KeyPermanentlyInvalidatedException) {
+                getAndLoadKeystore().deleteEntry(keyName)
+                return getInitializedCipherForEncryption(keyName)
+            }
+        }
         return cipher
     }
 
@@ -28,14 +38,24 @@ internal class CryptographyManagerImpl(
     ): Cipher {
         val cipher = getCipher()
         val secretKey = getOrCreateSecretKey(keyName)
-        cipher.init(
-            Cipher.DECRYPT_MODE,
-            secretKey,
-            GCMParameterSpec(
-                /* tLen = */ AUTHENTICATION_TAG_BIT_LENGTH,
-                /* src = */ initializationVector,
-            ),
-        )
+        try {
+            cipher.init(
+                Cipher.DECRYPT_MODE,
+                secretKey,
+                GCMParameterSpec(
+                    /* tLen = */
+                    AUTHENTICATION_TAG_BIT_LENGTH,
+                    /* src = */
+                    initializationVector,
+                ),
+            )
+        } catch (e: Exception) {
+            // retry create new cipher when a (new) biometric added or removed
+            if (e is KeyPermanentlyInvalidatedException) {
+                getAndLoadKeystore().deleteEntry(keyName)
+                return getInitializedCipherForDecryption(keyName, initializationVector)
+            }
+        }
         return cipher
     }
 
@@ -54,32 +74,39 @@ internal class CryptographyManagerImpl(
         return Cipher.getInstance(transformation)
     }
 
+    private fun getAndLoadKeystore(): KeyStore {
+        return KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
+    }
+
     private fun getOrCreateSecretKey(keyName: String): SecretKey {
-        val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE)
-        keyStore.load(null) // Keystore must be loaded before it can be accessed
-        keyStore.getKey(keyName, null)?.let {
+        getAndLoadKeystore().getKey(keyName, null)?.let {
             // If SecretKey was previously created for that keyName, then grab and return it.
             return it as SecretKey
         }
 
         // No key found, a new SecretKey must be generated for the given keyName
         val paramsBuilder = KeyGenParameterSpec.Builder(
-            /* keystoreAlias = */ keyName,
-            /* purposes = */ KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
+            /* keystoreAlias = */
+            keyName,
+            /* purposes = */
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
         ).apply {
             setBlockModes(ENCRYPTION_BLOCK_MODE)
             setEncryptionPaddings(ENCRYPTION_PADDING)
             setKeySize(KEY_SIZE)
             setUserAuthenticationRequired(true)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // detect new biometric added or old biometric removed
                 setInvalidatedByBiometricEnrollment(true)
             }
         }
 
         val keyGenParams = paramsBuilder.build()
         val keyGenerator = KeyGenerator.getInstance(
-            /* algorithm = */ KeyProperties.KEY_ALGORITHM_AES,
-            /* provider = */ ANDROID_KEYSTORE,
+            /* algorithm = */
+            KeyProperties.KEY_ALGORITHM_AES,
+            /* provider = */
+            ANDROID_KEYSTORE,
         )
         keyGenerator.init(keyGenParams)
         return keyGenerator.generateKey()

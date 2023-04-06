@@ -40,8 +40,16 @@ internal object AuthenticatorUtils {
             BiometricManager.Authenticators.BIOMETRIC_STRONG -> "BIOMETRIC_STRONG"
             BiometricManager.Authenticators.BIOMETRIC_WEAK -> "BIOMETRIC_WEAK"
             BiometricManager.Authenticators.DEVICE_CREDENTIAL -> "DEVICE_CREDENTIAL"
-            BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL -> "BIOMETRIC_STRONG | DEVICE_CREDENTIAL"
-            BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL -> "BIOMETRIC_WEAK | DEVICE_CREDENTIAL"
+            BiometricManager.Authenticators.BIOMETRIC_STRONG
+                or BiometricManager.Authenticators.DEVICE_CREDENTIAL,
+            -> {
+                "BIOMETRIC_STRONG | DEVICE_CREDENTIAL"
+            }
+            BiometricManager.Authenticators.BIOMETRIC_WEAK
+                or BiometricManager.Authenticators.DEVICE_CREDENTIAL,
+            -> {
+                "BIOMETRIC_WEAK | DEVICE_CREDENTIAL"
+            }
             else -> authenticators.toString()
         }
     }

@@ -7,9 +7,11 @@ import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.google.gson.Gson
+import com.sun.auth.biometricauth.BiometricError.ERROR_AUTHENTICATOR_CONFLICT
 import com.sun.auth.biometricauth.BiometricError.ERROR_BIOMETRIC_MODE_IS_OFF
 import com.sun.auth.biometricauth.BiometricError.ERROR_BIOMETRIC_NOT_SET
 import com.sun.auth.biometricauth.BiometricError.ERROR_NO_CIPHER_CREATED
+import com.sun.auth.biometricauth.BiometricError.MESSAGE_AUTHENTICATORS_CONFLICT
 import com.sun.auth.biometricauth.BiometricError.MESSAGE_BIOMETRIC_MODE_IS_OFF
 import com.sun.auth.biometricauth.BiometricError.MESSAGE_BIOMETRIC_PROCESS_FAIL
 import com.sun.auth.biometricauth.BiometricError.MESSAGE_BIOMETRIC_UN_SUPPORTED
@@ -203,7 +205,7 @@ class BiometricHelper private constructor() {
             authenticators // default no set authenticators
         } else {
             if (promptInfo.allowedAuthenticators != authenticators) {
-                onError?.invoke(-1111, "PromptInfo allowedAuthenticators and authenticators are conflict")
+                onError?.invoke(ERROR_AUTHENTICATOR_CONFLICT, MESSAGE_AUTHENTICATORS_CONFLICT)
                 return
             } else {
                 authenticators
