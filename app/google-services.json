@@ -1,49 +1,49 @@
 {
   "project_info": {
-    "project_number": "",
-    "firebase_url": "",
-    "project_id": "",
-    "storage_bucket": ""
+    "project_number": "123123123123",
+    "firebase_url": "https://abcdef-1111111111111.firebaseio.com",
+    "project_id": "abcdef-1111111111111",
+    "storage_bucket": "abcdef-1111111111111.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "",
+        "mobilesdk_app_id": "1:11111111111:android:3e1b245fbc8aac5a3abdf3",
         "android_client_info": {
           "package_name": "com.sun.auth.sample"
         }
       },
       "oauth_client": [
         {
-          "client_id": "",
+          "client_id": "123123123123-.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.sun.auth.sample",
-            "certificate_hash": ""
+            "certificate_hash": "AIzaSyBezUnkSB96m6lmcSWo4D1233331112211"
           }
         },
         {
-          "client_id": "",
+          "client_id": "123123123123-.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": ""
+          "current_key": "AIzaSyBezUnkSB96m6lmcSWo4D1233331112211"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "",
+              "client_id": "123123123123-.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "",
+              "client_id": "123123123123-.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.sun-asterisk.com.AuthManagerDemo"
+                "bundle_id": "com.sun-asterisk.AuthExample"
               }
             }
           ]
