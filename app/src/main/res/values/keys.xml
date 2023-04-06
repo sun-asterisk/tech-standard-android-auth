@@ -1,0 +1,7 @@
+<resources>
+    <string name="google_web_client_id">111111111111-.apps.googleusercontent.com</string>
+    <string name="facebook_app_id">11111111111111</string>
+    <string name="facebook_app_secret">12312312312312312312312312312312</string>
+    <string name="fb_login_protocol_scheme">fb11111111111111</string>
+    <string name="facebook_client_token">12312312312312312312312312312312</string>
+</resources>

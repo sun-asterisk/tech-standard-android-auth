@@ -16,6 +16,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '11'
+          distribution: 'zulu'
+          cache: gradle
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Download Dependencies
@@ -26,6 +28,7 @@ jobs:
         run: ./gradlew detekt
       - name: Run UnitTest
         run: ./gradlew test
-      - name: Android Test Report Action
-        uses: asadmansr/android-test-report-action@v1.2.0
-        if: ${{ always() }}
+#      Can't not use in organization github
+#      - name: Android Test Report Action
+#        uses: asadmansr/android-test-report-action@v1.2.0
+#        if: ${{ always() }}
