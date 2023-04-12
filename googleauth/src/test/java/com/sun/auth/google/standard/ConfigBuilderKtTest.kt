@@ -23,14 +23,15 @@ class ConfigBuilderKtTest {
     }
 
     @Test
-    fun initCredentialsAuth() {
+    fun initGoogleAuth() {
+        val clientId = "test_client_id"
         val options = GoogleSignInOptions.Builder().build()
         every {
             GoogleConfig.apply(any(), any(), any())
         } answers { callOriginal() }
 
         application.initGoogleAuth(
-            webClientId = "1",
+            webClientId = clientId,
             signInOptions = options,
             setup = {
                 enableOneTapSignIn = false
@@ -40,13 +41,14 @@ class ConfigBuilderKtTest {
 
         verify {
             GoogleConfig.apply(
-                clientId = "1",
+                clientId = clientId,
                 options = options,
                 setup = any(),
             )
         }
         GoogleStandardAuth.getPrivateProperty<GoogleStandardAuth, GoogleConfig>("config")
             ?.also { config ->
+                assert(config.webClientId == clientId)
                 assert(!config.enableOneTapSignIn)
                 assert(!config.enableFilterByAuthorizedAccounts)
             }
