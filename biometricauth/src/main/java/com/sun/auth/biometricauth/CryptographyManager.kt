@@ -4,19 +4,19 @@ import javax.crypto.Cipher
 
 internal interface CryptographyManager {
 
-    fun getInitializedCipherForEncryption(keyName: String): Cipher
+    fun getInitializedCipherForEncryption(): Cipher
 
-    fun getInitializedCipherForDecryption(keyName: String, initializationVector: ByteArray): Cipher
+    fun getInitializedCipherForDecryption(initializationVector: ByteArray): Cipher
 
-    fun <T> encryptData(data: T, cipher: Cipher): CiphertextWrapper
+    fun <T> encryptData(data: T, cipher: Cipher): CipherData
 
     fun <T> decryptData(ciphertext: ByteArray, cipher: Cipher, type: Class<T>): T
 
-    fun persistCiphertextWrapperToSharedPrefs(prefKey: String, ciphertextWrapper: CiphertextWrapper)
+    fun persistCiphertextWrapperToSharedPrefs(cipherData: CipherData)
 
-    fun getCiphertextWrapperFromSharedPrefs(prefKey: String): CiphertextWrapper?
+    fun getCiphertextWrapperFromSharedPrefs(): CipherData?
 
-    fun removeCiphertextWrapperFromSharedPrefs(prefKey: String)
+    fun removeCiphertextWrapperFromSharedPrefs()
 
     fun removeAllCiphertextFromSharedPrefs()
 }

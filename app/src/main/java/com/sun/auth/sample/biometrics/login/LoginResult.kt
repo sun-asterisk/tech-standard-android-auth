@@ -1,10 +1,7 @@
-package com.sun.auth.sample.biometric
+package com.sun.auth.sample.biometrics.login
 
 import com.sun.auth.sample.model.Token
 
-/**
- * Authentication result : token (success) or error.
- */
 data class LoginResult(
     val token: Token? = null,
     val error: Throwable? = null,

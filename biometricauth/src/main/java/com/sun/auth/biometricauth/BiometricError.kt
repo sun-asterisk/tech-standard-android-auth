@@ -1,36 +1,25 @@
 package com.sun.auth.biometricauth
 
-import androidx.biometric.BiometricManager
+sealed class BiometricException(
+    val errorCode: Int?,
+    message: String?,
+    cause: Throwable? = null,
+) : Throwable(message = message, cause = cause)
 
-/**
- * Extras errors code and message when process Biometric. For other default errors, see [BiometricManager]
- */
-object BiometricError {
-    /**
-     * Occur when initialize cipher process is fail
-     */
-    const val ERROR_NO_CIPHER_CREATED = 100
+data class UnableEncryptData(private val originalCause: Throwable) : BiometricException(
+    errorCode = 999,
+    message = "The security on the device has changed and this key is no longer able to encrypt any data.",
+    cause = originalCause,
+)
 
-    /**
-     * Occur when you try to use biometric authentication (DECRYPT) when this biometric is [BiometricMode.OFF].
-     */
-    const val ERROR_BIOMETRIC_MODE_IS_OFF = 101
+data class UnableDecryptData(private val originalCause: Throwable) : BiometricException(
+    errorCode = 998,
+    message = "The security on the device has changed and this key is no longer able to to decrypt data",
+    cause = originalCause,
+)
 
-    const val ERROR_BIOMETRIC_NOT_SET = 102
-    const val ERROR_AUTHENTICATOR_CONFLICT = 103
-
-    const val MESSAGE_NO_CIPHER_CREATED = "No cipher is created!"
-    const val MESSAGE_BIOMETRIC_MODE_IS_OFF = "Biometric mode is off!"
-
-    /**
-     * Common error message when authenticate is not [BiometricManager.BIOMETRIC_SUCCESS] status.
-     *
-     * See all definitions error code in [BiometricManager] class.
-     */
-    const val MESSAGE_BIOMETRIC_PROCESS_FAIL = "Biometric authenticate process failed!"
-    const val MESSAGE_NO_BIOMETRIC_SETTINGS = "Seems biometric is not set!"
-    const val MESSAGE_BIOMETRIC_UN_SUPPORTED = "The user can't authenticate because the " +
-        "specified options are incompatible with the current Android version."
-    const val MESSAGE_AUTHENTICATORS_CONFLICT = "PromptInfo allowedAuthenticators and " +
-        "authenticators are conflict"
-}
+data class UnableInitializeCipher(private val originalCause: Throwable?) : BiometricException(
+    errorCode = 997,
+    message = "The key has been rotated within the Android keystore and any ciphertext encrypted with the old key is no longer accessible.",
+    cause = originalCause,
+)

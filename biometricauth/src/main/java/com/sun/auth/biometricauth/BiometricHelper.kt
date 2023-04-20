@@ -1,24 +1,11 @@
 package com.sun.auth.biometricauth
 
 import android.content.Context
-import android.util.Log
-import androidx.biometric.BiometricManager.*
 import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.google.gson.Gson
-import com.sun.auth.biometricauth.BiometricError.ERROR_AUTHENTICATOR_CONFLICT
-import com.sun.auth.biometricauth.BiometricError.ERROR_BIOMETRIC_MODE_IS_OFF
-import com.sun.auth.biometricauth.BiometricError.ERROR_BIOMETRIC_NOT_SET
-import com.sun.auth.biometricauth.BiometricError.ERROR_NO_CIPHER_CREATED
-import com.sun.auth.biometricauth.BiometricError.MESSAGE_AUTHENTICATORS_CONFLICT
-import com.sun.auth.biometricauth.BiometricError.MESSAGE_BIOMETRIC_MODE_IS_OFF
-import com.sun.auth.biometricauth.BiometricError.MESSAGE_BIOMETRIC_PROCESS_FAIL
-import com.sun.auth.biometricauth.BiometricError.MESSAGE_BIOMETRIC_UN_SUPPORTED
-import com.sun.auth.biometricauth.BiometricError.MESSAGE_NO_BIOMETRIC_SETTINGS
-import com.sun.auth.biometricauth.BiometricError.MESSAGE_NO_CIPHER_CREATED
-import com.sun.auth.biometricauth.CryptographyManagerImpl.Companion.BIOMETRIC_CYPHER_KEY
-import com.sun.auth.biometricauth.CryptographyManagerImpl.Companion.BIOMETRIC_KEY_NAME
 import com.sun.auth.core.weak
 import javax.crypto.Cipher
 
@@ -28,8 +15,17 @@ class BiometricHelper private constructor() {
     private var context: Context? by weak(null)
     private lateinit var cryptographyManager: CryptographyManager
     private fun init(context: Context) {
-        this.context = context.applicationContext
-        cryptographyManager = CryptographyManagerImpl(SharedPrefApiImpl(context, gson), gson)
+        this.context = context
+        cryptographyManager =
+            CryptographyManagerImpl(boundContext = context.applicationContext, gson = gson)
+    }
+
+    fun isBiometricAvailable(): Boolean {
+        return context?.getStrongestAuthenticators() is StrongestAuthenticators.Available
+    }
+
+    fun isBiometricNotEnrolled(): Boolean {
+        return context?.getStrongestAuthenticators() is StrongestAuthenticators.NotEnrolled
     }
 
     /**
@@ -51,27 +47,22 @@ class BiometricHelper private constructor() {
     /**
      * Persist the cipher text to storage.
      *
-     * @param prefKey The preference key
-     * @param ciphertextWrapper The Encrypted [CiphertextWrapper] object want to save
+     * @param cipherData The Encrypted [CipherData] object want to save
      */
-    fun persistCiphertextWrapperToSharedPrefs(
-        prefKey: String,
-        ciphertextWrapper: CiphertextWrapper,
-    ) {
-        cryptographyManager.persistCiphertextWrapperToSharedPrefs(prefKey, ciphertextWrapper)
+    fun persistCiphertextWrapperToSharedPrefs(cipherData: CipherData) {
+        cryptographyManager.persistCiphertextWrapperToSharedPrefs(cipherData)
     }
 
     /**
      * Gets the saved cipher text from storage.
-     * @param prefKey The preference key
-     * @return The Encrypted [CiphertextWrapper] object
+     * @return The Encrypted [CipherData] object
      */
-    fun getCiphertextWrapperFromSharedPrefs(prefKey: String): CiphertextWrapper? {
-        return cryptographyManager.getCiphertextWrapperFromSharedPrefs(prefKey)
+    fun getCiphertextWrapperFromSharedPrefs(): CipherData? {
+        return cryptographyManager.getCiphertextWrapperFromSharedPrefs()
     }
 
-    fun removeCiphertextWrapperFromSharedPrefs(prefKey: String) {
-        cryptographyManager.removeCiphertextWrapperFromSharedPrefs(prefKey)
+    fun removeCiphertextWrapperFromSharedPrefs() {
+        cryptographyManager.removeCiphertextWrapperFromSharedPrefs()
     }
 
     /**
@@ -79,12 +70,16 @@ class BiometricHelper private constructor() {
      * @param data The authentication data you want to encrypt and persist to storage.
      * @param cipher The cipher from [BiometricPrompt.CryptoObject] after [BiometricPrompt.AuthenticationResult] success.
      */
-    fun <T> encryptAndPersistAuthenticationData(data: T, cipher: Cipher) {
+    fun <T> encryptAndPersistAuthenticationData(
+        data: T,
+        cipher: Cipher,
+        fallbackUnrecoverable: (() -> Unit)? = null,
+    ) {
         try {
             val encryptedData = encryptData(data, cipher)
-            persistCiphertextWrapperToSharedPrefs(BIOMETRIC_CYPHER_KEY, encryptedData)
-        } catch (e: Exception) {
-            Log.e("x", "${e.printStackTrace()}")
+            persistCiphertextWrapperToSharedPrefs(encryptedData)
+        } catch (e: UnableEncryptData) {
+            fallbackUnrecoverable?.invoke()
         }
     }
 
@@ -95,18 +90,31 @@ class BiometricHelper private constructor() {
      *
      * @return The authentication data or null
      */
-    fun <T> decryptSavedAuthenticationData(cipher: Cipher, clazz: Class<T>): T? {
-        val encryptedData = getCiphertextWrapperFromSharedPrefs(BIOMETRIC_CYPHER_KEY)
-        encryptedData ?: return null
-        return decryptData(encryptedData.ciphertext, cipher, clazz)
+    fun <T> decryptSavedAuthenticationData(
+        cipher: Cipher,
+        clazz: Class<T>,
+        fallbackUnrecoverable: (() -> Unit)? = null,
+    ): T? {
+        try {
+            val encryptedData = getCiphertextWrapperFromSharedPrefs()
+            if (encryptedData == null) {
+                fallbackUnrecoverable?.invoke()
+                return null
+            }
+            return decryptData(encryptedData.ciphertext, cipher, clazz)
+        } catch (e: Exception) {
+//            removeCiphertextWrapperFromSharedPrefs()
+            fallbackUnrecoverable?.invoke()
+            return null
+        }
     }
 
     /**
      * Gets saved encrypted authentication data from storage.
      * @return encrypted authentication data.
      */
-    fun getAuthenticationDataCipherFromSharedPrefs(): CiphertextWrapper? {
-        return getCiphertextWrapperFromSharedPrefs(BIOMETRIC_CYPHER_KEY)
+    fun getAuthenticationDataCipherFromSharedPrefs(): CipherData? {
+        return getCiphertextWrapperFromSharedPrefs()
     }
 
     /**
@@ -114,33 +122,21 @@ class BiometricHelper private constructor() {
      *
      * @param fragment The current fragment
      * @param mode The biometric mode which want to launch, see [BiometricMode]
-     * @param cipherTextWrapper The saved cipher text, null if biometric mode is [BiometricMode.ON]
      * @param promptInfo The BiometricPrompt should appear and behave, use [BiometricPromptUtils.createPromptInfo]
-     * @param authenticators A bit field representing the types of [Authenticators] that maybe used for authentication.
-     * @param secretKey The key name generate when create a cipher.
-     * @param onError The callback when biometric process fail.
-     * @param onSuccess The callback when biometric process success.
+     * @param callback The callback with [BiometricResult] when biometric process complete.
      */
-    private fun processBiometric(
+    fun processBiometric(
         fragment: Fragment? = null,
         mode: BiometricMode,
-        cipherTextWrapper: CiphertextWrapper?,
         promptInfo: BiometricPrompt.PromptInfo,
-        authenticators: Int? = null,
-        secretKey: String = BIOMETRIC_KEY_NAME,
-        onError: ((code: Int?, message: String?) -> Unit)? = null,
-        onSuccess: (result: BiometricPrompt.AuthenticationResult) -> Unit,
+        callback: (result: BiometricResult) -> Unit,
     ) {
         processBiometricInternal(
             fragment = fragment,
             activity = null,
             mode = mode,
-            cipherTextWrapper = cipherTextWrapper,
             promptInfo = promptInfo,
-            authenticators = authenticators,
-            secretKey = secretKey,
-            onError = onError,
-            onSuccess = onSuccess,
+            callback = callback,
         )
     }
 
@@ -149,33 +145,21 @@ class BiometricHelper private constructor() {
      *
      * @param activity The current fragment activity
      * @param mode The biometric mode which want to launch, see [BiometricMode]
-     * @param cipherTextWrapper The saved cipher text, null if biometric mode is [BiometricMode.ON]
      * @param promptInfo The BiometricPrompt should appear and behave, use [BiometricPromptUtils.createPromptInfo]
-     * @param authenticators A bit field representing the types of [Authenticators] that maybe used for authentication.
-     * @param secretKey The key name generate when create a cipher.
-     * @param onError The callback when biometric process fail.
-     * @param onSuccess The callback when biometric process success.
+     * @param callback The callback with [BiometricResult] when biometric process complete.
      */
     fun processBiometric(
         activity: FragmentActivity,
         mode: BiometricMode,
-        cipherTextWrapper: CiphertextWrapper?,
         promptInfo: BiometricPrompt.PromptInfo,
-        authenticators: Int? = null,
-        secretKey: String = BIOMETRIC_KEY_NAME,
-        onError: ((code: Int?, message: String?) -> Unit)? = null,
-        onSuccess: (result: BiometricPrompt.AuthenticationResult) -> Unit,
+        callback: (result: BiometricResult) -> Unit,
     ) {
         processBiometricInternal(
             fragment = null,
             activity = activity,
             mode = mode,
-            cipherTextWrapper = cipherTextWrapper,
             promptInfo = promptInfo,
-            authenticators = authenticators,
-            secretKey = secretKey,
-            onError = onError,
-            onSuccess = onSuccess,
+            callback = callback,
         )
     }
 
@@ -183,97 +167,54 @@ class BiometricHelper private constructor() {
         fragment: Fragment? = null,
         activity: FragmentActivity? = null,
         mode: BiometricMode,
-        cipherTextWrapper: CiphertextWrapper?,
         promptInfo: BiometricPrompt.PromptInfo,
-        authenticators: Int?,
-        secretKey: String,
-        onError: ((code: Int?, message: String?) -> Unit)?,
-        onSuccess: (result: BiometricPrompt.AuthenticationResult) -> Unit,
+        callback: (result: BiometricResult) -> Unit,
     ) {
-        if (authenticators != null && !AuthenticatorUtils.isSupportedCombination(authenticators)) {
-            onError?.invoke(BIOMETRIC_ERROR_UNSUPPORTED, MESSAGE_BIOMETRIC_UN_SUPPORTED)
-            return
-        }
-
-        if (mode != BiometricMode.ON && cipherTextWrapper == null) {
-            onError?.invoke(ERROR_BIOMETRIC_MODE_IS_OFF, MESSAGE_BIOMETRIC_MODE_IS_OFF)
-            return
-        }
-
-        // Verify required authenticators
-        val finalAuthenticators = if (promptInfo.allowedAuthenticators == 0) {
-            authenticators // default no set authenticators
-        } else {
-            if (promptInfo.allowedAuthenticators != authenticators) {
-                onError?.invoke(ERROR_AUTHENTICATOR_CONFLICT, MESSAGE_AUTHENTICATORS_CONFLICT)
-                return
-            } else {
-                authenticators
-            }
-        }
         try {
             val context = fragment?.requireContext() ?: activity!!
-            val canAuthenticate = from(context).canAuthenticate(finalAuthenticators!!)
-            if (canAuthenticate == BIOMETRIC_SUCCESS) {
-                val cipher = if (mode == BiometricMode.ON) {
-                    cryptographyManager.getInitializedCipherForEncryption(secretKey)
-                } else {
-                    cipherTextWrapper?.initializationVector?.let {
-                        cryptographyManager.getInitializedCipherForDecryption(secretKey, it)
-                    }
-                }
-                if (cipher == null) {
-                    onError?.invoke(ERROR_NO_CIPHER_CREATED, MESSAGE_NO_CIPHER_CREATED)
-                    return
-                }
-                if (fragment != null) {
-                    BiometricPromptUtils.createBiometricPrompt(
-                        fragment = fragment,
-                        doOnError = { errorCode, errorString ->
-                            if (errorCode == BIOMETRIC_ERROR_HW_UNAVAILABLE ||
-                                errorCode == BIOMETRIC_ERROR_NONE_ENROLLED
-                            ) {
-                                // The biometric on devices has changed
-                                cryptographyManager.removeAllCiphertextFromSharedPrefs()
-                            }
-                            onError?.invoke(errorCode, errorString?.toString())
-                        },
-                        doOnSuccess = { result ->
-                            if (mode == BiometricMode.OFF) {
-                                // Turn off biometric mode, then clear all saved cipher texts.
-                                cryptographyManager.removeAllCiphertextFromSharedPrefs()
-                            }
-                            onSuccess.invoke(result)
-                        },
-                    ).authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
-                }
-
-                if (activity != null) {
-                    BiometricPromptUtils.createBiometricPrompt(
-                        activity = activity,
-                        doOnError = { errorCode, errorString ->
-                            if (errorCode == BIOMETRIC_ERROR_HW_UNAVAILABLE ||
-                                errorCode == BIOMETRIC_ERROR_NONE_ENROLLED
-                            ) {
-                                // The biometric on devices has changed
-                                cryptographyManager.removeAllCiphertextFromSharedPrefs()
-                            }
-                            onError?.invoke(errorCode, errorString?.toString())
-                        },
-                        doOnSuccess = { result ->
-                            if (mode == BiometricMode.OFF) {
-                                // Turn off biometric authentication mode, then clear all saved cipher texts.
-                                cryptographyManager.removeAllCiphertextFromSharedPrefs()
-                            }
-                            onSuccess.invoke(result)
-                        },
-                    ).authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
-                }
+            val executor = ContextCompat.getMainExecutor(context)
+            val prompt = if (fragment != null) {
+                BiometricPrompt(fragment, executor, generateAuthenticationCallback(callback))
             } else {
-                onError?.invoke(canAuthenticate, MESSAGE_BIOMETRIC_PROCESS_FAIL)
+                BiometricPrompt(activity!!, executor, generateAuthenticationCallback(callback))
             }
-        } catch (ignored: Exception) {
-            onError?.invoke(ERROR_BIOMETRIC_NOT_SET, MESSAGE_NO_BIOMETRIC_SETTINGS)
+            val cipher = if (mode == BiometricMode.ON) {
+                cryptographyManager.getInitializedCipherForEncryption()
+            } else {
+                getCiphertextWrapperFromSharedPrefs()?.initializationVector?.let {
+                    cryptographyManager.getInitializedCipherForDecryption(it)
+                }
+            }
+            if (cipher == null) {
+                callback.invoke(BiometricResult.Failed)
+                return
+            }
+            prompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
+        } catch (e: Throwable) {
+            if (e is UnableDecryptData || e is UnableInitializeCipher) {
+                // can not work with current cipher anymore
+                removeCiphertextWrapperFromSharedPrefs()
+            }
+            callback.invoke(BiometricResult.BiometricRuntimeException(e))
+        }
+    }
+
+    private fun generateAuthenticationCallback(callback: (result: BiometricResult) -> Unit): BiometricPrompt.AuthenticationCallback {
+        return object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationError(errCode: Int, errString: CharSequence) {
+                super.onAuthenticationError(errCode, errString)
+                callback.invoke(BiometricResult.Error(errCode, errString.toString()))
+            }
+
+            override fun onAuthenticationFailed() {
+                super.onAuthenticationFailed()
+                callback.invoke(BiometricResult.Failed)
+            }
+
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                super.onAuthenticationSucceeded(result)
+                callback.invoke(BiometricResult.Success(result))
+            }
         }
     }
 

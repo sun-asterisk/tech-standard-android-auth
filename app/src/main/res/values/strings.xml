@@ -21,5 +21,8 @@
     <string name="biometric">Biometric</string>
     <string name="sign_in_with_biometric">Sign in with biometric</string>
     <string name="enable_biometric">Enable Biometric</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="enroll_biometrics">Enroll Biometrics</string>
+    <string name="you_don_t_have_any_device_biometric">You don\'t have any device biometric</string>
 
 </resources>

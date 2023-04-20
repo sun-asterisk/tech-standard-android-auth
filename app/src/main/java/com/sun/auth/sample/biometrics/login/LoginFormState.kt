@@ -1,7 +1,7 @@
-package com.sun.auth.sample.biometric
+package com.sun.auth.sample.biometrics.login
 
 /**
- * Data validation state of the signIn form.
+ * Data validation state of the login form.
  */
 data class LoginFormState(
     val usernameError: Int? = null,

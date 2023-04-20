@@ -2,7 +2,8 @@ package com.sun.auth.sample
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.sun.auth.sample.biometric.LoginViewModel
+import com.sun.auth.sample.biometrics.home.HomeViewModel
+import com.sun.auth.sample.biometrics.login.LoginViewModel
 import com.sun.auth.sample.credentials.CredentialsAuthViewModel
 import com.sun.auth.sample.facebook.firebase.FacebookFirebaseAuthViewModel
 import com.sun.auth.sample.facebook.standard.FacebookAuthViewModel
@@ -15,6 +16,9 @@ class ViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             return LoginViewModel() as T
+        }
+        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+            return HomeViewModel() as T
         }
         if (modelClass.isAssignableFrom(CredentialsAuthViewModel::class.java)) {
             return CredentialsAuthViewModel() as T
