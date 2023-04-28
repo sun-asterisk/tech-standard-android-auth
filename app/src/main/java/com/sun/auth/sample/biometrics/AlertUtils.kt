@@ -3,12 +3,16 @@ package com.sun.auth.sample.biometrics
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
 
+// FIXME: Just sample, try your better
 object AlertUtils {
 
     fun showSecuritySettingChangedDialog(context: Context, doOnPositiveClick: () -> Unit) {
         AlertDialog.Builder(context)
             .setTitle("Biometric login disabled")
-            .setMessage("The biometric settings on your device have changed. For security purposes, you will need to login again")
+            .setMessage(
+                "The biometric settings on your device have changed." +
+                    " For security purposes, you will need to login again",
+            )
             .setPositiveButton("OK") { _, _ ->
                 doOnPositiveClick()
             }

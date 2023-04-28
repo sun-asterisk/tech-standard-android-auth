@@ -71,18 +71,18 @@ internal class CryptographyManagerImpl(
             KeyPermanentlyInvalidatedException::class,
             InvalidKeyException::class,
         ) {
-            throw UnableInitializeCipher(it)
+            throw UnableToInitializeCipher(it)
         }.getOrThrow()
 
         return cipher
     }
 
-    override fun <T> encryptData(data: T, cipher: Cipher): CipherData {
+    override fun <T> encryptData(data: T, cipher: Cipher): EncryptedData {
         return runCatching {
             val ciphertext = cipher.doFinal(gson.toJson(data).toByteArray(Charsets.UTF_8))
-            CipherData(ciphertext, cipher.iv)
+            EncryptedData(ciphertext, cipher.iv)
         }.onException(IllegalBlockSizeException::class, BadPaddingException::class) {
-            throw UnableEncryptData(it)
+            throw UnableToEncryptData(it)
         }.getOrThrow()
     }
 
@@ -95,17 +95,17 @@ internal class CryptographyManagerImpl(
             IllegalBlockSizeException::class,
             BadPaddingException::class,
         ) {
-            throw UnableDecryptData(it)
+            throw UnableToDecryptData(it)
         }.getOrThrow<T>()
     }
 
     private fun getCipher(): Cipher {
-        val transformation = "$ENCRYPTION_ALGORITHM/$ENCRYPTION_BLOCK_MODE/$ENCRYPTION_PADDING"
+        val transformation = "$ALGORITHM/$BLOCK_MODE/$PADDING"
         return Cipher.getInstance(transformation)
     }
 
     private fun getAndLoadKeystore(): KeyStore {
-        return KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
+        return KeyStore.getInstance(KEYSTORE).apply { load(null) }
     }
 
     private fun getOrCreateSecretKey(): SecretKey {
@@ -143,8 +143,8 @@ internal class CryptographyManagerImpl(
             /* purposes = */
             KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
         ).apply {
-            setBlockModes(ENCRYPTION_BLOCK_MODE)
-            setEncryptionPaddings(ENCRYPTION_PADDING)
+            setBlockModes(BLOCK_MODE)
+            setEncryptionPaddings(PADDING)
             setKeySize(KEY_SIZE)
 
             setRandomizedEncryptionRequired(true)
@@ -172,35 +172,35 @@ internal class CryptographyManagerImpl(
         val keyGenParams = paramsBuilder.build()
         val keyGenerator = KeyGenerator.getInstance(
             /* algorithm = */ KeyProperties.KEY_ALGORITHM_AES,
-            /* provider = */ ANDROID_KEYSTORE,
+            /* provider = */ KEYSTORE,
         )
         keyGenerator.init(keyGenParams)
         return keyGenerator.generateKey()
     }
 
-    override fun persistCiphertextWrapperToSharedPrefs(cipherData: CipherData) {
-        sharedPrefApi.put(BIOMETRIC_CYPHER_PREF_KEY, cipherData)
+    override fun saveEncryptedData(encryptedData: EncryptedData) {
+        sharedPrefApi.put(PREF_KEY_ENCRYPTED_DATA, encryptedData)
     }
 
-    override fun getCiphertextWrapperFromSharedPrefs(): CipherData? {
-        return sharedPrefApi.get(BIOMETRIC_CYPHER_PREF_KEY, CipherData::class.java)
+    override fun getEncryptedData(): EncryptedData? {
+        return sharedPrefApi.get(PREF_KEY_ENCRYPTED_DATA, EncryptedData::class.java)
     }
 
-    override fun removeCiphertextWrapperFromSharedPrefs() {
-        sharedPrefApi.removeKey(BIOMETRIC_CYPHER_PREF_KEY)
+    override fun removeEncryptedData() {
+        sharedPrefApi.removeKey(PREF_KEY_ENCRYPTED_DATA)
     }
 
-    override fun removeAllCiphertextFromSharedPrefs() {
+    override fun clearEncryptedData() {
         sharedPrefApi.clear()
     }
 
     companion object {
         private const val KEY_SIZE = 256
-        private const val ANDROID_KEYSTORE = "AndroidKeyStore"
-        internal const val BIOMETRIC_CYPHER_PREF_KEY = "SUN_AUTH_BIOMETRIC_CYPHER_PREF_KEY"
-        internal const val BIOMETRIC_KEY_NAME = "Sun_Auth_BiometricKeyName"
-        private const val ENCRYPTION_ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
-        private const val ENCRYPTION_BLOCK_MODE = KeyProperties.BLOCK_MODE_CBC
-        private const val ENCRYPTION_PADDING = KeyProperties.ENCRYPTION_PADDING_PKCS7
+        private const val KEYSTORE = "AndroidKeyStore"
+        internal const val PREF_KEY_ENCRYPTED_DATA = "SUN_AUTH_PREF_KEY_ENCRYPTED_DATA"
+        internal const val BIOMETRIC_KEY_NAME = "SUN_AUTH_BIOMETRIC_KEY_NAME"
+        private const val ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
+        private const val BLOCK_MODE = KeyProperties.BLOCK_MODE_CBC
+        private const val PADDING = KeyProperties.ENCRYPTION_PADDING_PKCS7
     }
 }

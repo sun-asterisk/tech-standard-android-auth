@@ -15,6 +15,8 @@ object BiometricPromptUtils {
      *  confirmation after a passive biometric (e.g. iris or face) has been recognized,
      *  see [BiometricPrompt.PromptInfo.Builder.setConfirmationRequired].
      * @param negativeTextButton The label to be used for the negative button on the prompt.
+     *  Note: only visible if not allow device credentials authentication (pin/password/pattern)
+     * @param allowDeviceCredentials true if allow PIN/Pattern/Password to login
      * @return Biometric PromptInfo object with specified options.
      */
     @Suppress("LongParameterList")
@@ -25,6 +27,7 @@ object BiometricPromptUtils {
         description: String,
         confirmationRequired: Boolean = false,
         negativeTextButton: String? = null,
+        allowDeviceCredentials: Boolean = false,
     ): BiometricPrompt.PromptInfo {
         val promptInfo = BiometricPrompt.PromptInfo.Builder().apply {
             setTitle(title)
@@ -33,7 +36,7 @@ object BiometricPromptUtils {
             setConfirmationRequired(confirmationRequired)
         }
 
-        val promptAuthenticators = context.getStrongestAuthenticators()
+        val promptAuthenticators = context.getStrongestAuthenticators(allowDeviceCredentials)
         if (promptAuthenticators is StrongestAuthenticators.Available) {
             promptInfo.setAllowedAuthenticators((promptAuthenticators.authenticators))
             if (!promptAuthenticators.allowDeviceCredentials) {

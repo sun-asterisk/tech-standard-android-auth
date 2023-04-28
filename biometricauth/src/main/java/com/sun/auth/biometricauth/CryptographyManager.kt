@@ -8,15 +8,15 @@ internal interface CryptographyManager {
 
     fun getInitializedCipherForDecryption(initializationVector: ByteArray): Cipher
 
-    fun <T> encryptData(data: T, cipher: Cipher): CipherData
+    fun <T> encryptData(data: T, cipher: Cipher): EncryptedData
 
     fun <T> decryptData(ciphertext: ByteArray, cipher: Cipher, type: Class<T>): T
 
-    fun persistCiphertextWrapperToSharedPrefs(cipherData: CipherData)
+    fun saveEncryptedData(encryptedData: EncryptedData)
 
-    fun getCiphertextWrapperFromSharedPrefs(): CipherData?
+    fun getEncryptedData(): EncryptedData?
 
-    fun removeCiphertextWrapperFromSharedPrefs()
+    fun removeEncryptedData()
 
-    fun removeAllCiphertextFromSharedPrefs()
+    fun clearEncryptedData()
 }

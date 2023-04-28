@@ -12,6 +12,7 @@ import com.sun.auth.biometricauth.BiometricHelper
 import com.sun.auth.biometricauth.BiometricMode
 import com.sun.auth.biometricauth.BiometricPromptUtils
 import com.sun.auth.biometricauth.BiometricResult
+import com.sun.auth.biometricauth.isBiometricAvailable
 import com.sun.auth.sample.R
 import com.sun.auth.sample.ViewModelFactory
 import com.sun.auth.sample.biometrics.AlertUtils
@@ -27,7 +28,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
             LoginViewModel::class.java,
         )
     }
-    private val biometricHelper by lazy { BiometricHelper.getInstance(requireContext()) }
+    private val biometricHelper by lazy { BiometricHelper.from(requireContext()) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -45,12 +46,12 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
     }
 
     private fun updateBiometricLoginButton() {
-        val hasBiometricLoginEnabled =
-            biometricHelper.getAuthenticationDataCipherFromSharedPrefs() != null
-        val isBiometricAvailable = biometricHelper.isBiometricAvailable()
+        val hasBiometricLoginEnabled = biometricHelper.getEncryptedAuthenticationData() != null
+        val isBiometricAvailable = context.isBiometricAvailable()
+
         val isVisible = if (hasBiometricLoginEnabled && !isBiometricAvailable) {
             // seem settings biometric was changed
-            biometricHelper.removeCiphertextWrapperFromSharedPrefs()
+            biometricHelper.removeEncryptedData()
             false
         } else {
             hasBiometricLoginEnabled
@@ -71,6 +72,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
                 binding.password.error = getString(it)
             }
         }
+
         viewModel.credentialsAuthResult.observe(viewLifecycleOwner) { loginResult ->
             if (loginResult == null || loginResult.error != null) {
                 Toast.makeText(context, "Login error", Toast.LENGTH_SHORT).show()
@@ -107,7 +109,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
             callSignIn()
         }
         binding.loginBiometric.setOnClickListener {
-            doBiometricLogin()
+            callBiometricSignIn()
         }
     }
 
@@ -130,7 +132,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
         )
     }
 
-    private fun doBiometricLogin() {
+    private fun callBiometricSignIn() {
         biometricHelper.processBiometric(
             fragment = this,
             mode = BiometricMode.DECRYPT,
@@ -142,9 +144,9 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
 
     private fun handleBiometricResult(biometricResult: BiometricResult) {
         if (biometricResult is BiometricResult.Success) {
-            val cipher = biometricResult.result.cryptoObject?.cipher
+            val cipher = biometricResult.getCipher()
             var cipherError = cipher == null
-            cipher?.let {
+            val token = cipher?.let {
                 biometricHelper.decryptSavedAuthenticationData(
                     cipher = cipher,
                     clazz = Token::class.java,
@@ -158,9 +160,30 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
                 AlertUtils.showSecuritySettingChangedDialog(requireContext()) {
                     // do logout & remove biometric login data
                     // loginViewModel.signOut {  }
-                    biometricHelper.removeCiphertextWrapperFromSharedPrefs()
+                    biometricHelper.removeEncryptedData()
                 }
-            } else {
+            }
+
+            if (token != null) {
+                // From here we can use the token (or your authentication data).
+                // For this sample, I can try another steps to make sure we can use the latest token
+                // Because the biometric saved token may outdated with normal token (Ex: refresh token was called).
+                /* val normalToken = viewModel.getToken()
+                 val usedToken = if (token != normalToken && normalToken != null) {
+                     // this case biometric saved token is outdated, update it and use normalToken
+                     biometricHelper.encryptAndPersistAuthenticationData(normalToken, cipher, null)
+                     normalToken
+                 } else {
+                     // this account is signed out, so use the biometric saved token
+                     // just update biometric saved token as a normal Token
+                     // TODO: you should save token for check isLoggedIn
+                     // Ex: yourSharedPref.saveToken(token)
+                     CredentialsAuth.saveToken(token)
+                     token
+                 }
+                 // Use of usedToken here
+                 Log.d("LoginBiometric", usedToken.toString())*/
+
                 goToHome()
             }
         } else {

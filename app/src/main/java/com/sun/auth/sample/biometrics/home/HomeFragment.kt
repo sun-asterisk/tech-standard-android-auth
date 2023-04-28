@@ -12,6 +12,8 @@ import com.sun.auth.biometricauth.BiometricHelper
 import com.sun.auth.biometricauth.BiometricMode
 import com.sun.auth.biometricauth.BiometricPromptUtils
 import com.sun.auth.biometricauth.BiometricResult
+import com.sun.auth.biometricauth.isBiometricAvailable
+import com.sun.auth.biometricauth.isBiometricNotEnrolled
 import com.sun.auth.sample.R
 import com.sun.auth.sample.ViewModelFactory
 import com.sun.auth.sample.biometrics.AlertUtils
@@ -26,7 +28,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             HomeViewModel::class.java,
         )
     }
-    private val biometricHelper by lazy { BiometricHelper.getInstance(requireContext()) }
+    private val biometricHelper by lazy { BiometricHelper.from(requireContext()) }
     private val biometricState = BiometricState()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,19 +44,21 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun validateData() {
         val hasBiometricLoginEnabled =
-            biometricHelper.getAuthenticationDataCipherFromSharedPrefs() != null
-        val isBiometricAvailable = biometricHelper.isBiometricAvailable()
-        val isEnabled = if (hasBiometricLoginEnabled && !isBiometricAvailable) {
+            biometricHelper.getEncryptedAuthenticationData() != null
+        val isBiometricAvailable = context.isBiometricAvailable()
+
+        val isChecked = if (hasBiometricLoginEnabled && !isBiometricAvailable) {
             // seem settings biometric was changed
-            biometricHelper.removeCiphertextWrapperFromSharedPrefs()
+            biometricHelper.removeEncryptedData()
             false
         } else {
             hasBiometricLoginEnabled
         }
+
         updateBiometricOption(
             biometricState.copy(
                 isBiometricAvailable = isBiometricAvailable,
-                isBiometricChecked = isEnabled,
+                isBiometricChecked = isChecked,
             ),
         )
 
@@ -66,7 +70,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             if (!binding.swBiometric.isChecked) {
                 disableBiometric()
             } else {
-                if (biometricHelper.isBiometricNotEnrolled()) {
+                if (context.isBiometricNotEnrolled()) {
                     showEnrollBiometricDialog()
                 } else {
                     enableBiometricLogin()
@@ -109,8 +113,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         return BiometricPromptUtils.createPromptInfo(
             context = requireContext(),
             title = "Biometric Authentication Sample",
-            subtitle = "Please complete biometric for authentication",
-            description = "Complete Biometric for authentication",
+            subtitle = "Enable biometric authentication",
+            description = "Please complete biometric to enable biometric authentication",
             confirmationRequired = false,
             negativeTextButton = "Cancel",
         )
@@ -119,7 +123,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun enableBiometricLogin() {
         biometricHelper.processBiometric(
             fragment = this,
-            mode = BiometricMode.ON,
+            mode = BiometricMode.ENCRYPT,
             promptInfo = getBiometricPrompt(),
         ) {
             handleBiometricResult(it)
@@ -128,7 +132,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun handleBiometricResult(biometricResult: BiometricResult) {
         if (biometricResult is BiometricResult.Success) {
-            val cipher = biometricResult.result.cryptoObject?.cipher
+            val cipher = biometricResult.getCipher()
             var cipherError = cipher == null
             cipher?.let {
                 biometricHelper.encryptAndPersistAuthenticationData(
@@ -144,13 +148,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
         } else {
             updateBiometricOption(biometricState.copy(isBiometricChecked = false))
+
             val isBiometricError =
                 biometricResult is BiometricResult.Error && biometricResult.isBiometricLockout()
             if (isBiometricError) {
                 showBiometricLockoutDialog()
+                return
             }
-            val isCipherError =
-                biometricResult is BiometricResult.BiometricRuntimeException && biometricResult.isBiometricChangedError()
+
+            val isCipherError = biometricResult is BiometricResult.BiometricRuntimeException &&
+                biometricResult.isBiometricChangedError()
             if (isCipherError) {
                 AlertUtils.showSecuritySettingChangedDialog(requireContext()) {
                     findNavController().popBackStack()
@@ -166,7 +173,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun disableBiometric() {
-        biometricHelper.removeCiphertextWrapperFromSharedPrefs()
+        biometricHelper.removeEncryptedData()
         updateBiometricOption(biometricState.copy(isBiometricChecked = false))
     }
 

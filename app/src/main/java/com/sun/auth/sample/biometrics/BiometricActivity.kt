@@ -22,24 +22,4 @@ class BiometricActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
-
-    /*private fun checkAndStart() {
-        if (CredentialsAuth.isSignedIn<Token>()) {
-            navigateToHome()
-        } else {
-            navigateToLogin()
-        }
-    }
-
-    fun navigateToHome() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, HomeFragment.newInstance())
-            .commitNow()
-    }
-
-    fun navigateToLogin() {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, LoginFragment.newInstance())
-            .commitNow()
-    }*/
 }

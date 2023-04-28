@@ -6,14 +6,7 @@ enum class BiometricMode {
      *
      * Ex: Verify and encrypt the response Token to enable Setting biometric authentication.
      */
-    ON,
-
-    /**
-     * This mode is used when you try to verify biometric before turn off the biometric
-     *
-     * Ex: Verify and turn of biometric authentication settings.
-     */
-    OFF,
+    ENCRYPT,
 
     /**
      * This mode is used when you try to verify biometric before decrypt something.

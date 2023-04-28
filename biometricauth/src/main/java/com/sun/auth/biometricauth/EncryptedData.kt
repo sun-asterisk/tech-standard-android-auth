@@ -1,11 +1,11 @@
 package com.sun.auth.biometricauth
 
-data class CipherData(val ciphertext: ByteArray, val initializationVector: ByteArray) {
+data class EncryptedData(val ciphertext: ByteArray, val initializationVector: ByteArray) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as CipherData
+        other as EncryptedData
 
         if (!ciphertext.contentEquals(other.ciphertext)) return false
         if (!initializationVector.contentEquals(other.initializationVector)) return false

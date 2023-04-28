@@ -13,7 +13,7 @@ import com.sun.auth.sample.model.Token
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class LoginViewModel() : ViewModel() {
+class LoginViewModel : ViewModel() {
 
     private val _signInFormState = MutableLiveData<LoginFormState>()
     val signInFormState: LiveData<LoginFormState> = _signInFormState
@@ -32,6 +32,10 @@ class LoginViewModel() : ViewModel() {
                 },
             )
         }
+    }
+
+    fun getToken(): Token? {
+        return CredentialsAuth.getToken()
     }
 
     fun signOut(callback: () -> Unit) {

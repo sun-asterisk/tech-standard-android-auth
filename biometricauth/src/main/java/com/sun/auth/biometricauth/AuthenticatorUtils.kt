@@ -1,18 +1,3 @@
-/*
- * Copyright 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.sun.auth.biometricauth
 
 import android.content.Context
@@ -22,14 +7,30 @@ import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 
-var allowDeviceCredentials = false
 sealed interface StrongestAuthenticators {
+    /**
+     * Biometric is supported and enrolled.
+     */
     data class Available(val authenticators: Int) : StrongestAuthenticators {
         val allowDeviceCredentials: Boolean
             get() = authenticators and DEVICE_CREDENTIAL != 0
     }
+
+    /**
+     * The user can't authenticate because a security vulnerability has been discovered with one
+     * or more hardware sensors. The affected sensor(s) are unavailable until a security update
+     * has addressed the issue.
+     */
     object InsecureHardWare : StrongestAuthenticators
+
+    /**
+     * No hardware biometric is supported in this devices.
+     */
     object NotAvailable : StrongestAuthenticators
+
+    /**
+     * No biometric or device credential is enrolled in this devices
+     */
     object NotEnrolled : StrongestAuthenticators
 }
 
@@ -47,7 +48,7 @@ internal fun BiometricManager.mapToStrongestAuthenticators(authenticators: Int):
     }
 }
 
-internal fun Context.getStrongestAuthenticators(): StrongestAuthenticators {
+internal fun Context.getStrongestAuthenticators(allowDeviceCredentials: Boolean): StrongestAuthenticators {
     val biometricManager = BiometricManager.from(this)
     val authenticatorsToTry =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && allowDeviceCredentials) {
@@ -68,4 +69,40 @@ internal fun Context.getStrongestAuthenticators(): StrongestAuthenticators {
         }
     }
     return StrongestAuthenticators.NotAvailable
+}
+
+/**
+ * Check whether the biometric is available and enrolled
+ * @param allowDeviceCredentials true if allow PIN/Pattern/Password to login
+ * @return true if available and enrolled.
+ */
+fun Context?.isBiometricAvailable(allowDeviceCredentials: Boolean = false): Boolean {
+    return this?.getStrongestAuthenticators(allowDeviceCredentials) is StrongestAuthenticators.Available
+}
+
+/**
+ * Check whether the biometric is unavailable or unsupported on this device
+ * @param allowDeviceCredentials true if allow PIN/Pattern/Password to login
+ * @return true if unavailable or unsupported
+ */
+fun Context?.isBiometricUnAvailable(allowDeviceCredentials: Boolean = false): Boolean {
+    return this?.getStrongestAuthenticators(allowDeviceCredentials) is StrongestAuthenticators.NotAvailable
+}
+
+/**
+ * Check whether the biometric is insecure or not
+ * @param allowDeviceCredentials true if allow PIN/Pattern/Password to login
+ * @return true if biometric is insecure
+ */
+fun Context?.isBiometricInsecure(allowDeviceCredentials: Boolean = false): Boolean {
+    return this?.getStrongestAuthenticators(allowDeviceCredentials) is StrongestAuthenticators.InsecureHardWare
+}
+
+/**
+ * Check whether the biometric is enrolled or not
+ * @param allowDeviceCredentials true if allow PIN/Pattern/Password to login
+ * @return true if biometric is enrolled.
+ */
+fun Context?.isBiometricNotEnrolled(allowDeviceCredentials: Boolean = false): Boolean {
+    return this?.getStrongestAuthenticators(allowDeviceCredentials) is StrongestAuthenticators.NotEnrolled
 }

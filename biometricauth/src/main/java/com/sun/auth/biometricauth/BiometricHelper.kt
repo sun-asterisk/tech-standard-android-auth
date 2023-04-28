@@ -9,23 +9,13 @@ import com.google.gson.Gson
 import com.sun.auth.core.weak
 import javax.crypto.Cipher
 
-@Suppress("TooManyFunctions", "UnusedPrivateMember", "LongParameterList", "CyclomaticComplexMethod")
 class BiometricHelper private constructor() {
     private val gson = Gson()
     private var context: Context? by weak(null)
     private lateinit var cryptographyManager: CryptographyManager
-    private fun init(context: Context) {
-        this.context = context
-        cryptographyManager =
-            CryptographyManagerImpl(boundContext = context.applicationContext, gson = gson)
-    }
-
-    fun isBiometricAvailable(): Boolean {
-        return context?.getStrongestAuthenticators() is StrongestAuthenticators.Available
-    }
-
-    fun isBiometricNotEnrolled(): Boolean {
-        return context?.getStrongestAuthenticators() is StrongestAuthenticators.NotEnrolled
+    private fun init(appContext: Context) {
+        this.context = appContext
+        cryptographyManager = CryptographyManagerImpl(appContext, gson)
     }
 
     /**
@@ -45,24 +35,24 @@ class BiometricHelper private constructor() {
         cryptographyManager.decryptData(ciphertext, cipher, clazz)
 
     /**
-     * Persist the cipher text to storage.
+     * Persist the encrypted data to storage.
      *
-     * @param cipherData The Encrypted [CipherData] object want to save
+     * @param encryptedData The Encrypted [EncryptedData] object want to save
      */
-    fun persistCiphertextWrapperToSharedPrefs(cipherData: CipherData) {
-        cryptographyManager.persistCiphertextWrapperToSharedPrefs(cipherData)
+    fun saveEncryptedData(encryptedData: EncryptedData) {
+        cryptographyManager.saveEncryptedData(encryptedData)
     }
 
     /**
-     * Gets the saved cipher text from storage.
-     * @return The Encrypted [CipherData] object
+     * Gets the saved encrypted data from storage.
+     * @return The Encrypted [EncryptedData] object
      */
-    fun getCiphertextWrapperFromSharedPrefs(): CipherData? {
-        return cryptographyManager.getCiphertextWrapperFromSharedPrefs()
+    fun getEncryptedData(): EncryptedData? {
+        return cryptographyManager.getEncryptedData()
     }
 
-    fun removeCiphertextWrapperFromSharedPrefs() {
-        cryptographyManager.removeCiphertextWrapperFromSharedPrefs()
+    fun removeEncryptedData() {
+        cryptographyManager.removeEncryptedData()
     }
 
     /**
@@ -77,8 +67,8 @@ class BiometricHelper private constructor() {
     ) {
         try {
             val encryptedData = encryptData(data, cipher)
-            persistCiphertextWrapperToSharedPrefs(encryptedData)
-        } catch (e: UnableEncryptData) {
+            saveEncryptedData(encryptedData)
+        } catch (e: UnableToEncryptData) {
             fallbackUnrecoverable?.invoke()
         }
     }
@@ -96,25 +86,24 @@ class BiometricHelper private constructor() {
         fallbackUnrecoverable: (() -> Unit)? = null,
     ): T? {
         try {
-            val encryptedData = getCiphertextWrapperFromSharedPrefs()
+            val encryptedData = getEncryptedData()
             if (encryptedData == null) {
                 fallbackUnrecoverable?.invoke()
                 return null
             }
             return decryptData(encryptedData.ciphertext, cipher, clazz)
         } catch (e: Exception) {
-//            removeCiphertextWrapperFromSharedPrefs()
             fallbackUnrecoverable?.invoke()
             return null
         }
     }
 
     /**
-     * Gets saved encrypted authentication data from storage.
+     * Gets saved encrypted authentication data from shared preferences.
      * @return encrypted authentication data.
      */
-    fun getAuthenticationDataCipherFromSharedPrefs(): CipherData? {
-        return getCiphertextWrapperFromSharedPrefs()
+    fun getEncryptedAuthenticationData(): EncryptedData? {
+        return getEncryptedData()
     }
 
     /**
@@ -178,28 +167,33 @@ class BiometricHelper private constructor() {
             } else {
                 BiometricPrompt(activity!!, executor, generateAuthenticationCallback(callback))
             }
-            val cipher = if (mode == BiometricMode.ON) {
+            // init the cipher by mode
+            val cipher = if (mode == BiometricMode.ENCRYPT) {
                 cryptographyManager.getInitializedCipherForEncryption()
             } else {
-                getCiphertextWrapperFromSharedPrefs()?.initializationVector?.let {
+                getEncryptedData()?.initializationVector?.let {
                     cryptographyManager.getInitializedCipherForDecryption(it)
                 }
             }
             if (cipher == null) {
-                callback.invoke(BiometricResult.Failed)
+                callback.invoke(
+                    BiometricResult.BiometricRuntimeException(UnableToInitializeCipher(null)),
+                )
                 return
             }
+            // verify biometric
             prompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
         } catch (e: Throwable) {
-            if (e is UnableDecryptData || e is UnableInitializeCipher) {
+            if (e is UnableToDecryptData || e is UnableToInitializeCipher) {
                 // can not work with current cipher anymore
-                removeCiphertextWrapperFromSharedPrefs()
+                removeEncryptedData()
             }
             callback.invoke(BiometricResult.BiometricRuntimeException(e))
         }
     }
 
-    private fun generateAuthenticationCallback(callback: (result: BiometricResult) -> Unit): BiometricPrompt.AuthenticationCallback {
+    private fun generateAuthenticationCallback(callback: (result: BiometricResult) -> Unit):
+        BiometricPrompt.AuthenticationCallback {
         return object : BiometricPrompt.AuthenticationCallback() {
             override fun onAuthenticationError(errCode: Int, errString: CharSequence) {
                 super.onAuthenticationError(errCode, errString)
@@ -221,9 +215,9 @@ class BiometricHelper private constructor() {
     companion object {
         private var instance: BiometricHelper? = null
 
-        fun getInstance(context: Context): BiometricHelper {
+        fun from(context: Context): BiometricHelper {
             if (instance == null) {
-                instance = BiometricHelper().apply { init(context) }
+                instance = BiometricHelper().apply { init(context.applicationContext) }
             }
             return instance!!
         }
