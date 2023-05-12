@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sun.auth.biometricauth.BiometricHelper
 import com.sun.auth.biometricauth.BiometricMode
-import com.sun.auth.biometricauth.BiometricPromptUtils
 import com.sun.auth.biometricauth.BiometricResult
 import com.sun.auth.biometricauth.isBiometricAvailable
 import com.sun.auth.sample.R
@@ -28,7 +27,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
             LoginViewModel::class.java,
         )
     }
-    private val biometricHelper by lazy { BiometricHelper.from(requireContext()) }
+    private val biometricHelper by lazy { BiometricHelper.getInstance(requireContext()) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -122,7 +121,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
     }
 
     private fun getBiometricPrompt(): BiometricPrompt.PromptInfo {
-        return BiometricPromptUtils.createPromptInfo(
+        return biometricHelper.createPromptInfo(
             context = requireContext(),
             title = "Biometric Authentication Sample",
             subtitle = "Please complete biometric for authentication",
@@ -196,7 +195,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
                 }
             }
             val isCipherError =
-                biometricResult is BiometricResult.BiometricRuntimeException && biometricResult.isBiometricChangedError()
+                biometricResult is BiometricResult.RuntimeException && biometricResult.isKeyInvalidatedError()
             if (isCipherError) {
                 AlertUtils.showSecuritySettingChangedDialog(requireContext()) {
                     binding.loginBiometric.visibility = View.GONE

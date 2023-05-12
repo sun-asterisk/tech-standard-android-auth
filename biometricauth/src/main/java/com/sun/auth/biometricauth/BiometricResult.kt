@@ -22,13 +22,13 @@ sealed interface BiometricResult {
             errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
     }
 
-    data class BiometricRuntimeException(val exception: Throwable) : BiometricResult {
+    data class RuntimeException(val throwable: Throwable) : BiometricResult {
         /**
-         * Check device's biometric settings was changed or not.
-         * @return true if device's biometric settings was changed.
+         * Check if the key is invalidated or not.
+         * @return true if device's biometric settings was changed, then the key was invalidated.
          */
-        fun isBiometricChangedError(): Boolean {
-            return exception is UnableToInitializeCipher || exception is UnableToDecryptData
+        fun isKeyInvalidatedError(): Boolean {
+            return throwable is UnableToInitializeCipher || throwable is UnableToDecryptData
         }
     }
 

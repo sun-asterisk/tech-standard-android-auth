@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.sun.auth.biometricauth.BiometricHelper
 import com.sun.auth.biometricauth.BiometricMode
-import com.sun.auth.biometricauth.BiometricPromptUtils
 import com.sun.auth.biometricauth.BiometricResult
 import com.sun.auth.biometricauth.isBiometricAvailable
 import com.sun.auth.biometricauth.isBiometricNotEnrolled
@@ -28,7 +27,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             HomeViewModel::class.java,
         )
     }
-    private val biometricHelper by lazy { BiometricHelper.from(requireContext()) }
+    private val biometricHelper by lazy { BiometricHelper.getInstance(requireContext()) }
     private val biometricState = BiometricState()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -110,13 +109,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun getBiometricPrompt(): BiometricPrompt.PromptInfo {
-        return BiometricPromptUtils.createPromptInfo(
+        return biometricHelper.createPromptInfo(
             context = requireContext(),
             title = "Biometric Authentication Sample",
             subtitle = "Enable biometric authentication",
             description = "Please complete biometric to enable biometric authentication",
             confirmationRequired = false,
             negativeTextButton = "Cancel",
+            allowDeviceCredentials = false,
         )
     }
 
@@ -156,8 +156,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 return
             }
 
-            val isCipherError = biometricResult is BiometricResult.BiometricRuntimeException &&
-                biometricResult.isBiometricChangedError()
+            val isCipherError = biometricResult is BiometricResult.RuntimeException &&
+                biometricResult.isKeyInvalidatedError()
             if (isCipherError) {
                 AlertUtils.showSecuritySettingChangedDialog(requireContext()) {
                     findNavController().popBackStack()

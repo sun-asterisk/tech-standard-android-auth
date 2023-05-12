@@ -5,17 +5,15 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import com.google.gson.Gson
-import com.sun.auth.core.weak
 import javax.crypto.Cipher
 
 class BiometricHelper private constructor() {
-    private val gson = Gson()
-    private var context: Context? by weak(null)
     private lateinit var cryptographyManager: CryptographyManager
-    private fun init(appContext: Context) {
-        this.context = appContext
-        cryptographyManager = CryptographyManagerImpl(appContext, gson)
+    private var allowDeviceCredentials: Boolean = false
+
+    private fun init(context: Context, allowDeviceCredentials: Boolean) {
+        this.allowDeviceCredentials = allowDeviceCredentials
+        cryptographyManager = CryptographyManagerImpl(context, allowDeviceCredentials)
     }
 
     /**
@@ -107,11 +105,52 @@ class BiometricHelper private constructor() {
     }
 
     /**
+     * Create Biometric PromptInfo object with specified options.
+     *
+     * @param title required, title of prompt.
+     * @param subtitle required, sub title of prompt.
+     * @param description required, description of prompt.
+     * @param confirmationRequired optional, Sets a system hint for whether to require explicit user
+     *  confirmation after a passive biometric (e.g. iris or face) has been recognized,
+     *  see [BiometricPrompt.PromptInfo.Builder.setConfirmationRequired].
+     * @param negativeTextButton The label to be used for the negative button on the prompt.
+     *  Note: only visible if not allow device credentials authentication (pin/password/pattern)
+     * @param allowDeviceCredentials true if allow PIN/Pattern/Password to login
+     * @return Biometric PromptInfo object with specified options.
+     */
+    @Suppress("LongParameterList")
+    fun createPromptInfo(
+        context: Context,
+        title: String,
+        subtitle: String,
+        description: String,
+        confirmationRequired: Boolean = false,
+        negativeTextButton: String? = null,
+        allowDeviceCredentials: Boolean = false,
+    ): BiometricPrompt.PromptInfo {
+        val promptInfo = BiometricPrompt.PromptInfo.Builder().apply {
+            setTitle(title)
+            setSubtitle(subtitle)
+            setDescription(description)
+            setConfirmationRequired(confirmationRequired)
+        }
+
+        val promptAuthenticators = context.getStrongestAuthenticators(allowDeviceCredentials)
+        if (promptAuthenticators is StrongestAuthenticators.Available) {
+            promptInfo.setAllowedAuthenticators((promptAuthenticators.authenticators))
+            if (!promptAuthenticators.allowDeviceCredentials) {
+                promptInfo.setNegativeButtonText(negativeTextButton ?: "Cancel")
+            }
+        }
+        return promptInfo.build()
+    }
+
+    /**
      * Start biometric process, verify and get biometric authentication result.
      *
      * @param fragment The current fragment
      * @param mode The biometric mode which want to launch, see [BiometricMode]
-     * @param promptInfo The BiometricPrompt should appear and behave, use [BiometricPromptUtils.createPromptInfo]
+     * @param promptInfo The BiometricPrompt should appear and behave, use [createPromptInfo]
      * @param callback The callback with [BiometricResult] when biometric process complete.
      */
     fun processBiometric(
@@ -134,7 +173,7 @@ class BiometricHelper private constructor() {
      *
      * @param activity The current fragment activity
      * @param mode The biometric mode which want to launch, see [BiometricMode]
-     * @param promptInfo The BiometricPrompt should appear and behave, use [BiometricPromptUtils.createPromptInfo]
+     * @param promptInfo The BiometricPrompt should appear and behave, use [createPromptInfo]
      * @param callback The callback with [BiometricResult] when biometric process complete.
      */
     fun processBiometric(
@@ -177,7 +216,7 @@ class BiometricHelper private constructor() {
             }
             if (cipher == null) {
                 callback.invoke(
-                    BiometricResult.BiometricRuntimeException(UnableToInitializeCipher(null)),
+                    BiometricResult.RuntimeException(UnableToInitializeCipher(null)),
                 )
                 return
             }
@@ -188,7 +227,7 @@ class BiometricHelper private constructor() {
                 // can not work with current cipher anymore
                 removeEncryptedData()
             }
-            callback.invoke(BiometricResult.BiometricRuntimeException(e))
+            callback.invoke(BiometricResult.RuntimeException(e))
         }
     }
 
@@ -215,9 +254,17 @@ class BiometricHelper private constructor() {
     companion object {
         private var instance: BiometricHelper? = null
 
-        fun from(context: Context): BiometricHelper {
+        /**
+         * Get the singleton instance of [BiometricHelper].
+         * @param context The application context
+         * @param allowDeviceCredentials Allow using device credentials to access keystore, default is false
+         */
+        fun getInstance(
+            context: Context,
+            allowDeviceCredentials: Boolean = false,
+        ): BiometricHelper {
             if (instance == null) {
-                instance = BiometricHelper().apply { init(context.applicationContext) }
+                instance = BiometricHelper().apply { init(context, allowDeviceCredentials) }
             }
             return instance!!
         }

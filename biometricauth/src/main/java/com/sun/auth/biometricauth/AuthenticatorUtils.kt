@@ -7,7 +7,7 @@ import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 
-sealed interface StrongestAuthenticators {
+internal sealed interface StrongestAuthenticators {
     /**
      * Biometric is supported and enrolled.
      */

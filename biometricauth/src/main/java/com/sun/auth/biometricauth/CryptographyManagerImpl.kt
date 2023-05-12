@@ -24,17 +24,17 @@ import javax.crypto.spec.IvParameterSpec
 
 internal class CryptographyManagerImpl(
     boundContext: Context,
-    private val gson: Gson,
+    private val allowDeviceCredentials: Boolean,
 ) : CryptographyManager {
     private var context: Context? by weak(null)
-
-    init {
-        context = boundContext
-    }
-
+    private val gson by lazy { Gson() }
     private val sharedPrefApi: SharedPrefApi by lazy {
         checkNotNull(context) { "Context must be provided!" }
         SharedPrefApiImpl(context!!, gson)
+    }
+
+    init {
+        context = boundContext
     }
 
     override fun getInitializedCipherForEncryption(): Cipher {
@@ -148,7 +148,11 @@ internal class CryptographyManagerImpl(
             setKeySize(KEY_SIZE)
 
             setRandomizedEncryptionRequired(true)
-            setUserAuthenticationRequired(true)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                // FIXME: Temporary remove crash when using biometric on Android 13+
+                setUserAuthenticationRequired(true)
+            }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 // detect new biometric added or old biometric removed
                 setInvalidatedByBiometricEnrollment(true)
@@ -156,6 +160,7 @@ internal class CryptographyManagerImpl(
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                setUnlockedDeviceRequired(true)
                 val hasStrongBox = context
                     ?.packageManager
                     ?.hasSystemFeature(PackageManager.FEATURE_STRONGBOX_KEYSTORE)
@@ -163,10 +168,18 @@ internal class CryptographyManagerImpl(
 
                 if (hasStrongBox) setIsStrongBoxBacked(true)
             }
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-//                setUnlockedDeviceRequired(true)
-//            }
-            // TODO: Check support credentials authentication
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (allowDeviceCredentials) {
+                    setUserAuthenticationParameters(
+                        0,
+                        KeyProperties.AUTH_BIOMETRIC_STRONG or KeyProperties.AUTH_DEVICE_CREDENTIAL,
+                    )
+                } else {
+                    setUserAuthenticationParameters(0, KeyProperties.AUTH_BIOMETRIC_STRONG)
+                }
+            } else {
+                setUserAuthenticationValidityDurationSeconds(if (allowDeviceCredentials) 0 else -1)
+            }
         }
 
         val keyGenParams = paramsBuilder.build()
