@@ -112,6 +112,13 @@ object CredentialsAuth {
     }
 
     /**
+     * Updates Token
+     */
+    fun <T : AuthToken> saveToken(token: T) {
+        repository.saveToken(token)
+    }
+
+    /**
      * Manually call refresh token. (Try to do this automatically by using [TokenAuthenticator])
      * @param request The refresh token [Request] with full url, request body. Ex
      * ```kt

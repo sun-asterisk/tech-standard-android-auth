@@ -8,6 +8,7 @@ import com.google.gson.JsonObject
 import com.sun.auth.credentials.CredentialsAuth
 import com.sun.auth.credentials.results.AuthCallback
 import com.sun.auth.sample.R
+import com.sun.auth.sample.model.Token
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.Request
