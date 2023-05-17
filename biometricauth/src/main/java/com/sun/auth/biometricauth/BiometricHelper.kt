@@ -199,13 +199,6 @@ class BiometricHelper private constructor() {
         callback: (result: BiometricResult) -> Unit,
     ) {
         try {
-            val context = fragment?.requireContext() ?: activity!!
-            val executor = ContextCompat.getMainExecutor(context)
-            val prompt = if (fragment != null) {
-                BiometricPrompt(fragment, executor, generateAuthenticationCallback(callback))
-            } else {
-                BiometricPrompt(activity!!, executor, generateAuthenticationCallback(callback))
-            }
             // init the cipher by mode
             val cipher = if (mode == BiometricMode.ENCRYPT) {
                 cryptographyManager.getInitializedCipherForEncryption()
@@ -219,6 +212,13 @@ class BiometricHelper private constructor() {
                     BiometricResult.RuntimeException(UnableToInitializeCipher(null)),
                 )
                 return
+            }
+            val context = fragment?.requireContext() ?: activity!!
+            val executor = ContextCompat.getMainExecutor(context)
+            val prompt = if (fragment != null) {
+                BiometricPrompt(fragment, executor, generateAuthenticationCallback(callback))
+            } else {
+                BiometricPrompt(activity!!, executor, generateAuthenticationCallback(callback))
             }
             // verify biometric
             prompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
