@@ -19,7 +19,7 @@ class ConfigBuilderKtTest {
     }
 
     @Test
-    fun initCredentialsAuth() {
+    fun initFacebookFirebaseAuth() {
         every { FacebookSdk.sdkInitialize(any()) } returns mockk()
         every {
             FacebookConfig.apply(any(), any(), any(), any())

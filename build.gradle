@@ -15,6 +15,7 @@ plugins {
     id 'com.android.library' version '7.4.1' apply false
     id 'org.jetbrains.kotlin.android' version '1.8.10' apply false
     id 'io.gitlab.arturbosch.detekt' version '1.22.0' apply false
+    id 'nl.neotech.plugin.rootcoverage' version '1.6.0'
 }
 
 tasks.register("clean", Delete) {
@@ -23,6 +24,31 @@ tasks.register("clean", Delete) {
 
 tasks.register("reportMerge", ReportMergeTask) {
     output = project.layout.buildDirectory.file("reports/detekt/merge.xml")
+}
+
+rootCoverage {
+    buildVariant "debug"
+    excludes = [
+            "**/bumptech/glide/*.*",
+            "androidx/**/*.class",
+            "**/*Test*.*",
+            "**/*Application*.*",
+            "**/*Activity*.*",
+            "**/*Fragment*.*",
+            "**/*Adapter*.*",
+            "**/*Dialog*.*",
+            "**/*Args*.*",
+            "**/*Companion*.*",
+            "**/*Binder*.*",
+            "**/auth/sample/**/*"
+    ]
+    generateCsv false
+    generateHtml true
+    generateXml false
+    executeAndroidTests false
+    executeUnitTests true
+    includeAndroidTestResults false
+    includeUnitTestResults true
 }
 
 allprojects {

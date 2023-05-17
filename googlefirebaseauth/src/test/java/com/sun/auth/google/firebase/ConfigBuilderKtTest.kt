@@ -22,13 +22,14 @@ class ConfigBuilderKtTest {
     }
 
     @Test
-    fun initCredentialsAuth() {
+    fun initGoogleFirebaseAuth() {
+        val clientId = "test_client_id"
         every {
             GoogleConfig.apply(any(), any())
         } answers { callOriginal() }
 
         application.initGoogleAuth(
-            webClientId = "1",
+            webClientId = clientId,
             setup = {
                 enableOneTapSignIn = false
                 enableFilterByAuthorizedAccounts = false
@@ -36,12 +37,14 @@ class ConfigBuilderKtTest {
         )
 
         verify {
-            GoogleConfig.apply(clientId = "1", setup = any())
+            GoogleConfig.apply(clientId = clientId, setup = any())
         }
         GoogleFirebaseAuth.getPrivateProperty<GoogleFirebaseAuth, GoogleConfig>("config")
             ?.also { config ->
+                assert(config.webClientId == clientId)
                 assert(!config.enableOneTapSignIn)
                 assert(!config.enableFilterByAuthorizedAccounts)
+                assert(!config.enableLinkAccounts)
             }
     }
 }

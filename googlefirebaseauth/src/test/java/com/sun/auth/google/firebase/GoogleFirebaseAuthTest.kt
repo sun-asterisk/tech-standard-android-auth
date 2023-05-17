@@ -1,5 +1,6 @@
 package com.sun.auth.google.firebase
 
+import android.content.Context
 import com.sun.auth.core.PROVIDER_GOOGLE
 import com.sun.auth.core.setPrivateProperty
 import io.mockk.*
@@ -16,6 +17,18 @@ class GoogleFirebaseAuthTest {
         MockKAnnotations.init(this, relaxed = true)
         mockkObject(GoogleFirebaseAuth)
         GoogleFirebaseAuth.setPrivateProperty("authClient", authClient)
+    }
+
+    @Test
+    fun initialize() {
+        val context = mockk<Context>().apply {
+            every { applicationContext } returns mockk()
+        }
+        val config = mockk<GoogleConfig>()
+        GoogleFirebaseAuth.initialize(context, config)
+        verify {
+            context.applicationContext
+        }
     }
 
     @Test
@@ -49,5 +62,11 @@ class GoogleFirebaseAuthTest {
     fun getLinkedAccounts() {
         GoogleFirebaseAuth.getLinkedAccounts(PROVIDER_GOOGLE)
         verify { authClient.getLinkedAccounts(PROVIDER_GOOGLE) }
+    }
+
+    @Test
+    fun showOneTapSignIn() {
+        GoogleFirebaseAuth.showOneTapSignIn()
+        verify { authClient.showOneTapSignIn() }
     }
 }

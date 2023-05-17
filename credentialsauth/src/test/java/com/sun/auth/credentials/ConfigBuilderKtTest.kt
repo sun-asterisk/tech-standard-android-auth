@@ -4,6 +4,8 @@ import android.app.Application
 import com.sun.auth.credentials.base.BaseUnitTest
 import com.sun.auth.credentials.repositories.model.AuthToken
 import io.mockk.*
+import okhttp3.Headers
+import okhttp3.logging.HttpLoggingInterceptor
 import org.junit.Test
 
 class ConfigBuilderKtTest : BaseUnitTest() {
@@ -29,9 +31,11 @@ class ConfigBuilderKtTest : BaseUnitTest() {
             signInUrl = "url",
             authTokenClazz = AuthToken::class.java,
             setup = {
-                connectTimeout = 10000L
                 readTimeout = 10000L
-                writeTimeout = 10000L
+                writeTimeout = 10000
+                connectTimeout = 10000L
+                httpLogLevel = HttpLoggingInterceptor.Level.HEADERS
+                customHeaders = Headers.headersOf()
                 basicAuthentication = ""
             },
         )
@@ -44,10 +48,14 @@ class ConfigBuilderKtTest : BaseUnitTest() {
             )
         }
         verify { CredentialsAuth.initialize(any(), config.captured) }
-
-        assert(config.captured.connectTimeout == 10000L)
-        assert(config.captured.writeTimeout == 10000L)
-        assert(config.captured.readTimeout == 10000L)
-        assert(config.captured.basicAuthentication == "")
+        with(config.captured) {
+            assert(signInUrl == "url")
+            assert(connectTimeout == 10000L)
+            assert(writeTimeout == 10000L)
+            assert(readTimeout == 10000L)
+            assert(httpLogLevel == HttpLoggingInterceptor.Level.HEADERS)
+            assert(authTokenClazz == AuthToken::class.java)
+            assert(basicAuthentication == "")
+        }
     }
 }
