@@ -148,10 +148,8 @@ internal class CryptographyManagerImpl(
             setKeySize(KEY_SIZE)
 
             setRandomizedEncryptionRequired(true)
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                // FIXME: Temporary remove crash when using biometric on Android 13+
-                setUserAuthenticationRequired(true)
-            }
+            // FIXME: Temporary remove crash when using biometric on Android 13+
+            setUserAuthenticationRequired(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 // detect new biometric added or old biometric removed
@@ -160,7 +158,6 @@ internal class CryptographyManagerImpl(
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                setUnlockedDeviceRequired(true)
                 val hasStrongBox = context
                     ?.packageManager
                     ?.hasSystemFeature(PackageManager.FEATURE_STRONGBOX_KEYSTORE)
@@ -178,7 +175,8 @@ internal class CryptographyManagerImpl(
                     setUserAuthenticationParameters(0, KeyProperties.AUTH_BIOMETRIC_STRONG)
                 }
             } else {
-                setUserAuthenticationValidityDurationSeconds(if (allowDeviceCredentials) 0 else -1)
+                // Require authentication with biometric every time
+                setUserAuthenticationValidityDurationSeconds(if (allowDeviceCredentials) 0 else 1)
             }
         }
 
