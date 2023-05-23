@@ -34,8 +34,6 @@ dependencies {
     with defaultDependencies
     implementation project(':core')
     api 'androidx.biometric:biometric-ktx:1.2.0-alpha05'
-    implementation 'com.google.code.gson:gson:2.10'
-    implementation 'androidx.security:security-crypto-ktx:1.1.0-alpha05'
 }
 
 with jitpackPublisher

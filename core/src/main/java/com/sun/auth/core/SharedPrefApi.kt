@@ -1,8 +1,8 @@
-package com.sun.auth.credentials.repositories.local.api
+package com.sun.auth.core
 
 import android.content.SharedPreferences
 
-internal interface SharedPrefApi {
+interface SharedPrefApi {
     fun <T> put(key: String, data: T)
     fun <T> get(key: String, type: Class<T>, default: T? = null): T?
     fun <T> putList(key: String, list: List<T>)

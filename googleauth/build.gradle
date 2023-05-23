@@ -38,7 +38,7 @@ dependencies {
     implementation project(":core")
     with defaultDependencies
 
-    api 'com.google.android.gms:play-services-auth:20.4.1'
+    api 'com.google.android.gms:play-services-auth:20.5.0'
 }
 
 with jitpackPublisher
