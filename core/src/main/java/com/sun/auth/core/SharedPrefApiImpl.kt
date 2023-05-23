@@ -1,4 +1,4 @@
-package com.sun.auth.credentials.repositories.local.api
+package com.sun.auth.core
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -7,10 +7,8 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.sun.auth.credentials.utils.PREF_ENCRYPTED_FILE_NAME
-import com.sun.auth.credentials.utils.PREF_NORMAL_FILE_NAME
 
-internal class SharedPrefApiImpl(context: Context, private val gson: Gson) : SharedPrefApi {
+class SharedPrefApiImpl(context: Context, private val gson: Gson) : SharedPrefApi {
     private val sharedPreferences by lazy {
         try {
             val masterKeyAlias = MasterKey.Builder(context)
@@ -62,15 +60,19 @@ internal class SharedPrefApiImpl(context: Context, private val gson: Gson) : Sha
             Boolean::class.java -> java.lang.Boolean.valueOf(
                 sharedPreferences.getBoolean(key, default as? Boolean ?: false),
             ) as? T
+
             Float::class.java -> java.lang.Float.valueOf(
                 sharedPreferences.getFloat(key, default as? Float ?: 0f),
             ) as? T
+
             Int::class.java -> Integer.valueOf(
                 sharedPreferences.getInt(key, default as? Int ?: 0),
             ) as? T
+
             Long::class.java -> java.lang.Long.valueOf(
                 sharedPreferences.getLong(key, default as? Long ?: 0L),
             ) as? T
+
             else -> gson.fromJson(sharedPreferences.getString(key, default as? String), type)
         }
     }
@@ -94,5 +96,7 @@ internal class SharedPrefApiImpl(context: Context, private val gson: Gson) : Sha
 
     companion object {
         private const val TAG = "SharedPrefApi"
+        private const val PREF_ENCRYPTED_FILE_NAME = "Encrypted_Prefs_Auth"
+        private const val PREF_NORMAL_FILE_NAME = "UnEncrypted_Prefs_Auth"
     }
 }

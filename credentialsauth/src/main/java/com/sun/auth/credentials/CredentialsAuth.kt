@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.gson.GsonBuilder
+import com.sun.auth.core.SharedPrefApiImpl
 import com.sun.auth.core.weak
 import com.sun.auth.credentials.interceptors.BasicAuthInterceptor
 import com.sun.auth.credentials.interceptors.CustomHeadersInterceptor
@@ -12,7 +13,6 @@ import com.sun.auth.credentials.interceptors.TokenAuthenticator
 import com.sun.auth.credentials.repositories.AuthRepository
 import com.sun.auth.credentials.repositories.AuthRepositoryImpl
 import com.sun.auth.credentials.repositories.local.AuthLocalDataSource
-import com.sun.auth.credentials.repositories.local.api.SharedPrefApiImpl
 import com.sun.auth.credentials.repositories.model.AuthToken
 import com.sun.auth.credentials.repositories.remote.AuthRemoteDataSource
 import com.sun.auth.credentials.repositories.remote.api.NonAuthApi

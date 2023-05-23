@@ -6,10 +6,15 @@ This is repo contains multiple helper modules which help you quickly adapt your 
 process to your application.<br>
 See [sample code](app/src/main/java/com/sun/auth/sample) & each library module for more detail.
 
-## [Authentication with credential](https://github.com/sun-asterisk/tech-standard-android-auth/wiki/Credential-authentication)
+## [Authentication with credential](https://github.com/sun-asterisk/tech-standard-android-auth/wiki/Credentials-authentication)
 This [Credentials auth library](https://github.com/sun-asterisk/tech-standard-android-auth/tree/master/credentialsauth) 
 provides a simple way to help you easy to handle credentials authentication and token management.
 Some of features are `signIn`, `signOut`, `refreshToken`...
+
+## [Biometric authentication](https://github.com/sun-asterisk/tech-standard-android-auth/wiki/Biometric-authentication)
+This [Biometric authentication library](https://github.com/sun-asterisk/tech-standard-android-auth/tree/master/biometricauth) 
+is a small wrapper `androidx biometric` library which provides a simple way to help you easy to handle biometric authentication. 
+Combine with `Credentials auth library` to support your user to use biometric to sign in.
 
 ## [Authentication with Google](https://github.com/sun-asterisk/tech-standard-android-auth/wiki/Google-Standard-Authentication)
 There are 2 small libraries built on top of `Firebase authentication` and `Google Sign-In SDK` for android.
@@ -36,7 +41,8 @@ Then add required dependencies to your `app/build.gradle`
 ```groovy
 dependencies {
     implementation "com.github.sun-asterisk.tech-standard-android-auth:core:${latest_version}" // required
-    
+
+    implementation "com.github.sun-asterisk.tech-standard-android-auth:biometricauth:${latest_version}"
     implementation "com.github.sun-asterisk.tech-standard-android-auth:credentialsauth:${latest_version}"
     implementation "com.github.sun-asterisk.tech-standard-android-auth:googleauth:${latest_version}"
     implementation "com.github.sun-asterisk.tech-standard-android-auth:googlefirebaseauth:${latest_version}"

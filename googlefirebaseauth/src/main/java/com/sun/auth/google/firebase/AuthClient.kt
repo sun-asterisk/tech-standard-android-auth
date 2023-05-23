@@ -73,7 +73,7 @@ class AuthClient(
                 firebaseAuthWithGoogle(idToken)
             }
         } catch (e: ApiException) {
-            if (e.statusCode == Activity.RESULT_CANCELED) {
+            if (e.status.isCanceled) {
                 signInCallback?.onResult(error = CancellationAuthException())
             } else {
                 signInCallback?.onResult(error = SocialAuthException(e))

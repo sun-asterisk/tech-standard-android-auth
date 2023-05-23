@@ -7,6 +7,8 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import com.google.gson.Gson
+import com.sun.auth.core.SharedPrefApi
+import com.sun.auth.core.SharedPrefApiImpl
 import com.sun.auth.core.onException
 import com.sun.auth.core.weak
 import java.security.InvalidAlgorithmParameterException
