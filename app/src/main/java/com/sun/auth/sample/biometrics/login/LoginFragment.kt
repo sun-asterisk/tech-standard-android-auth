@@ -8,10 +8,9 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.sun.auth.biometricauth.BiometricHelper
+import com.sun.auth.biometricauth.BiometricAuth
 import com.sun.auth.biometricauth.BiometricMode
 import com.sun.auth.biometricauth.BiometricResult
-import com.sun.auth.biometricauth.isBiometricAvailable
 import com.sun.auth.sample.R
 import com.sun.auth.sample.ViewModelFactory
 import com.sun.auth.sample.biometrics.AlertUtils
@@ -27,7 +26,6 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
             LoginViewModel::class.java,
         )
     }
-    private val biometricHelper by lazy { BiometricHelper.getInstance(requireContext()) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -45,12 +43,12 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
     }
 
     private fun updateBiometricLoginButton() {
-        val hasBiometricLoginEnabled = biometricHelper.getEncryptedAuthenticationData() != null
-        val isBiometricAvailable = context.isBiometricAvailable()
+        val hasBiometricLoginEnabled = BiometricAuth.getEncryptedAuthenticationData() != null
+        val isBiometricAvailable = BiometricAuth.isBiometricAvailable()
 
         val isVisible = if (hasBiometricLoginEnabled && !isBiometricAvailable) {
             // seem settings biometric was changed
-            biometricHelper.removeEncryptedData()
+            BiometricAuth.removeEncryptedData()
             false
         } else {
             hasBiometricLoginEnabled
@@ -121,7 +119,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
     }
 
     private fun getBiometricPrompt(): BiometricPrompt.PromptInfo {
-        return biometricHelper.createPromptInfo(
+        return BiometricAuth.createPromptInfo(
             context = requireContext(),
             title = "Biometric Authentication Sample",
             subtitle = "Please complete biometric for authentication",
@@ -132,12 +130,12 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
     }
 
     private fun callBiometricSignIn() {
-        biometricHelper.processBiometric(
+        BiometricAuth.processBiometric(
             fragment = this,
             mode = BiometricMode.DECRYPT,
             promptInfo = getBiometricPrompt(),
-        ) {
-            handleBiometricResult(it)
+        ) { result ->
+            handleBiometricResult(result)
         }
     }
 
@@ -146,7 +144,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
             val cipher = biometricResult.getCipher()
             var cipherError = cipher == null
             val token = cipher?.let {
-                biometricHelper.decryptSavedAuthenticationData(
+                BiometricAuth.decryptSavedAuthenticationData(
                     cipher = cipher,
                     clazz = Token::class.java,
                     fallbackUnrecoverable = {
@@ -159,7 +157,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
                 AlertUtils.showSecuritySettingChangedDialog(requireContext()) {
                     // do logout & remove biometric login data
                     // loginViewModel.signOut {  }
-                    biometricHelper.removeEncryptedData()
+                    BiometricAuth.removeEncryptedData()
                 }
             }
 
@@ -170,7 +168,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel>() {
                 /* val normalToken = viewModel.getToken()
                  val usedToken = if (token != normalToken && normalToken != null) {
                      // this case biometric saved token is outdated, update it and use normalToken
-                     biometricHelper.encryptAndPersistAuthenticationData(normalToken, cipher, null)
+                     BiometricAuth.encryptAndPersistAuthenticationData(normalToken, cipher, null)
                      normalToken
                  } else {
                      // this account is signed out, so use the biometric saved token

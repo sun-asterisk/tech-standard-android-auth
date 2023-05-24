@@ -1,4 +1,4 @@
-package com.sun.auth.biometricauth
+package com.sun.auth.biometricauth.internal
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -7,6 +7,8 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import com.google.gson.Gson
+import com.sun.auth.biometricauth.BiometricConfig
+import com.sun.auth.biometricauth.EncryptedData
 import com.sun.auth.core.SharedPrefApi
 import com.sun.auth.core.SharedPrefApiImpl
 import com.sun.auth.core.onException
@@ -26,7 +28,7 @@ import javax.crypto.spec.IvParameterSpec
 
 internal class CryptographyManagerImpl(
     boundContext: Context,
-    private val allowDeviceCredentials: Boolean,
+    private val config: BiometricConfig,
 ) : CryptographyManager {
     private var context: Context? by weak(null)
     private val gson by lazy { Gson() }
@@ -102,8 +104,9 @@ internal class CryptographyManagerImpl(
     }
 
     private fun getCipher(): Cipher {
-        val transformation = "$ALGORITHM/$BLOCK_MODE/$PADDING"
-        return Cipher.getInstance(transformation)
+        return config.run {
+            Cipher.getInstance("$algorithm/$blockMode/$padding")
+        }
     }
 
     private fun getAndLoadKeystore(): KeyStore {
@@ -112,9 +115,9 @@ internal class CryptographyManagerImpl(
 
     private fun getOrCreateSecretKey(): SecretKey {
         val keystore = getAndLoadKeystore()
-        return if (keystore.containsAlias(BIOMETRIC_KEY_NAME)) {
+        return if (keystore.containsAlias(config.keystoreAlias)) {
             runCatching {
-                keystore.getKey(BIOMETRIC_KEY_NAME, null) as SecretKey
+                keystore.getKey(config.keystoreAlias, null) as SecretKey
             }.onException(
                 NoSuchAlgorithmException::class,
                 UnrecoverableEntryException::class,
@@ -130,7 +133,7 @@ internal class CryptographyManagerImpl(
     private fun tryDeleteAndRecreateKey(): SecretKey {
         val keyStore = getAndLoadKeystore()
         try {
-            keyStore.deleteEntry(BIOMETRIC_KEY_NAME)
+            keyStore.deleteEntry(config.keystoreAlias)
         } catch (ignored: KeyStoreException) {
             // If the key cannot be deleted, then create a new one in its place
         }
@@ -141,17 +144,17 @@ internal class CryptographyManagerImpl(
         // No key found, a new SecretKey must be generated for the given keyName
         val paramsBuilder = KeyGenParameterSpec.Builder(
             /* keystoreAlias = */
-            BIOMETRIC_KEY_NAME,
+            config.keystoreAlias,
             /* purposes = */
             KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
         ).apply {
-            setBlockModes(BLOCK_MODE)
-            setEncryptionPaddings(PADDING)
-            setKeySize(KEY_SIZE)
+            setKeySize(config.keySize)
+            setBlockModes(config.blockMode)
+            setEncryptionPaddings(config.padding)
 
             setRandomizedEncryptionRequired(true)
-            // FIXME: Temporary remove crash when using biometric on Android 13+
-            setUserAuthenticationRequired(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+            // FIXME: Temporary remove crash when using biometric on Android 13
+            setUserAuthenticationRequired(Build.VERSION.SDK_INT != Build.VERSION_CODES.TIRAMISU)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 // detect new biometric added or old biometric removed
@@ -168,7 +171,7 @@ internal class CryptographyManagerImpl(
                 if (hasStrongBox) setIsStrongBoxBacked(true)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                if (allowDeviceCredentials) {
+                if (config.allowDeviceCredentials) {
                     setUserAuthenticationParameters(
                         0,
                         KeyProperties.AUTH_BIOMETRIC_STRONG or KeyProperties.AUTH_DEVICE_CREDENTIAL,
@@ -178,7 +181,7 @@ internal class CryptographyManagerImpl(
                 }
             } else {
                 // Require authentication with biometric every time
-                setUserAuthenticationValidityDurationSeconds(if (allowDeviceCredentials) 0 else 1)
+                setUserAuthenticationValidityDurationSeconds(if (config.allowDeviceCredentials) 0 else -1)
             }
         }
 
@@ -203,17 +206,8 @@ internal class CryptographyManagerImpl(
         sharedPrefApi.removeKey(PREF_KEY_ENCRYPTED_DATA)
     }
 
-    override fun clearEncryptedData() {
-        sharedPrefApi.clear()
-    }
-
     companion object {
-        private const val KEY_SIZE = 256
         private const val KEYSTORE = "AndroidKeyStore"
         internal const val PREF_KEY_ENCRYPTED_DATA = "SUN_AUTH_PREF_KEY_ENCRYPTED_DATA"
-        internal const val BIOMETRIC_KEY_NAME = "SUN_AUTH_BIOMETRIC_KEY_NAME"
-        private const val ALGORITHM = KeyProperties.KEY_ALGORITHM_AES
-        private const val BLOCK_MODE = KeyProperties.BLOCK_MODE_CBC
-        private const val PADDING = KeyProperties.ENCRYPTION_PADDING_PKCS7
     }
 }
