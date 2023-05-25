@@ -1,8 +1,10 @@
 package com.sun.auth.sample
 
 import android.app.Application
+import android.security.keystore.KeyProperties
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.gson.JsonObject
+import com.sun.auth.biometricauth.initBiometricAuth
 import com.sun.auth.credentials.CredentialsAuth
 import com.sun.auth.credentials.initCredentialsAuth
 import com.sun.auth.credentials.results.AuthTokenChanged
@@ -18,6 +20,7 @@ class SampleApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         setupCredentialsAuth()
+        setupBiometricAuth()
         setupGoogleStandardAuth()
         setupGoogleFirebaseAuth()
         setupFacebookStandardAuth()
@@ -34,6 +37,18 @@ class SampleApplication : Application() {
                     return buildRefreshTokenRequest(token)
                 }
             }
+        }
+    }
+
+    private fun setupBiometricAuth() {
+        initBiometricAuth(
+            allowDeviceCredentials = true,
+        ) {
+            keystoreAlias = "sample_key_name"
+            keySize = 256
+            algorithm = KeyProperties.KEY_ALGORITHM_AES
+            blockMode = KeyProperties.BLOCK_MODE_CBC
+            padding = KeyProperties.ENCRYPTION_PADDING_PKCS7
         }
     }
 

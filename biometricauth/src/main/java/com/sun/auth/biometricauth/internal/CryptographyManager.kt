@@ -1,5 +1,6 @@
-package com.sun.auth.biometricauth
+package com.sun.auth.biometricauth.internal
 
+import com.sun.auth.biometricauth.EncryptedData
 import javax.crypto.Cipher
 
 internal interface CryptographyManager {
@@ -17,6 +18,4 @@ internal interface CryptographyManager {
     fun getEncryptedData(): EncryptedData?
 
     fun removeEncryptedData()
-
-    fun clearEncryptedData()
 }

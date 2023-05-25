@@ -1,6 +1,7 @@
 package com.sun.auth.sample.biometrics.home
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
@@ -8,11 +9,9 @@ import android.widget.Toast
 import androidx.biometric.BiometricPrompt
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.sun.auth.biometricauth.BiometricHelper
+import com.sun.auth.biometricauth.BiometricAuth
 import com.sun.auth.biometricauth.BiometricMode
 import com.sun.auth.biometricauth.BiometricResult
-import com.sun.auth.biometricauth.isBiometricAvailable
-import com.sun.auth.biometricauth.isBiometricNotEnrolled
 import com.sun.auth.sample.R
 import com.sun.auth.sample.ViewModelFactory
 import com.sun.auth.sample.biometrics.AlertUtils
@@ -27,8 +26,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             HomeViewModel::class.java,
         )
     }
-    private val biometricHelper by lazy { BiometricHelper.getInstance(requireContext()) }
-    private val biometricState = BiometricState()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -43,24 +40,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun validateData() {
         val hasBiometricLoginEnabled =
-            biometricHelper.getEncryptedAuthenticationData() != null
-        val isBiometricAvailable = context.isBiometricAvailable()
+            BiometricAuth.getEncryptedAuthenticationData() != null
+        val isBiometricAvailable = BiometricAuth.isBiometricAvailable()
 
         val isChecked = if (hasBiometricLoginEnabled && !isBiometricAvailable) {
             // seem settings biometric was changed
-            biometricHelper.removeEncryptedData()
+            BiometricAuth.removeEncryptedData()
             false
         } else {
             hasBiometricLoginEnabled
         }
 
-        updateBiometricOption(
-            biometricState.copy(
-                isBiometricAvailable = isBiometricAvailable,
-                isBiometricChecked = isChecked,
-            ),
-        )
-
+        updateBiometricOption(isChecked)
         binding.tvId.text = "Welcome: ${viewModel.getToken()?.crAccessToken}"
     }
 
@@ -69,7 +60,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             if (!binding.swBiometric.isChecked) {
                 disableBiometric()
             } else {
-                if (context.isBiometricNotEnrolled()) {
+                if (BiometricAuth.isBiometricNotEnrolled()) {
                     showEnrollBiometricDialog()
                 } else {
                     enableBiometricLogin()
@@ -92,7 +83,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             if (it.error != null) {
                 showProcessError()
             } else {
-                binding.tvId.text = "Updated: ${it.token?.accessToken}"
+                binding.tvId.text = "Refreshed: ${it.token?.accessToken}"
             }
         }
     }
@@ -101,32 +92,28 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         Toast.makeText(context, "Unexpected Error occurs", Toast.LENGTH_SHORT).show()
     }
 
-    private fun updateBiometricOption(biometricState: BiometricState) {
-        binding.swBiometric.apply {
-            visibility = if (biometricState.isBiometricAvailable) View.VISIBLE else View.GONE
-            isChecked = biometricState.isBiometricChecked
-        }
+    private fun updateBiometricOption(isChecked: Boolean) {
+        binding.swBiometric.isChecked = isChecked
     }
 
     private fun getBiometricPrompt(): BiometricPrompt.PromptInfo {
-        return biometricHelper.createPromptInfo(
+        return BiometricAuth.createPromptInfo(
             context = requireContext(),
             title = "Biometric Authentication Sample",
             subtitle = "Enable biometric authentication",
             description = "Please complete biometric to enable biometric authentication",
             confirmationRequired = false,
             negativeTextButton = "Cancel",
-            allowDeviceCredentials = false,
         )
     }
 
     private fun enableBiometricLogin() {
-        biometricHelper.processBiometric(
+        BiometricAuth.processBiometric(
             fragment = this,
             mode = BiometricMode.ENCRYPT,
             promptInfo = getBiometricPrompt(),
-        ) {
-            handleBiometricResult(it)
+        ) { result ->
+            handleBiometricResult(result)
         }
     }
 
@@ -135,7 +122,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             val cipher = biometricResult.getCipher()
             var cipherError = cipher == null
             cipher?.let {
-                biometricHelper.encryptAndPersistAuthenticationData(
+                BiometricAuth.encryptAndPersistAuthenticationData(
                     data = viewModel.getToken(),
                     cipher = it,
                     fallbackUnrecoverable = {
@@ -144,10 +131,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 )
             }
             if (cipherError) {
-                updateBiometricOption(biometricState.copy(isBiometricChecked = false))
+                updateBiometricOption(false)
             }
         } else {
-            updateBiometricOption(biometricState.copy(isBiometricChecked = false))
+            updateBiometricOption(false)
 
             val isBiometricError =
                 biometricResult is BiometricResult.Error && biometricResult.isBiometricLockout()
@@ -173,18 +160,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun disableBiometric() {
-        biometricHelper.removeEncryptedData()
-        updateBiometricOption(biometricState.copy(isBiometricChecked = false))
+        BiometricAuth.removeEncryptedData()
+        updateBiometricOption(false)
     }
 
     private fun showEnrollBiometricDialog() {
         AlertUtils.showEnrollBiometricDialog(
             requireContext(),
             doOnNegativeClick = {
-                updateBiometricOption(biometricState.copy(isBiometricChecked = false))
+                updateBiometricOption(false)
             },
             doOnPositiveClick = {
-                updateBiometricOption(biometricState.copy(isBiometricChecked = false))
+                updateBiometricOption(false)
                 goToAndroidSecuritySettings()
             },
         )
@@ -197,7 +184,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun goToAndroidSecuritySettings() {
-        Intent(Settings.ACTION_SECURITY_SETTINGS).apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent(Settings.ACTION_BIOMETRIC_ENROLL)
+        } else {
+            Intent(Settings.ACTION_SECURITY_SETTINGS)
+        }.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(this)
         }

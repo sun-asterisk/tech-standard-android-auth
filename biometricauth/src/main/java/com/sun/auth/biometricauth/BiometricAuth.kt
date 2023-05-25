@@ -5,26 +5,75 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import com.sun.auth.biometricauth.internal.CryptographyManager
+import com.sun.auth.biometricauth.internal.CryptographyManagerImpl
+import com.sun.auth.biometricauth.internal.StrongestAuthenticators
+import com.sun.auth.biometricauth.internal.UnableToDecryptData
+import com.sun.auth.biometricauth.internal.UnableToEncryptData
+import com.sun.auth.biometricauth.internal.UnableToInitializeCipher
+import com.sun.auth.biometricauth.internal.getStrongestAuthenticators
+import com.sun.auth.core.onException
+import com.sun.auth.core.weak
 import javax.crypto.Cipher
 
-class BiometricHelper private constructor() {
+object BiometricAuth {
+    private var context: Context? by weak(null)
+    private var config: BiometricConfig? = null
     private lateinit var cryptographyManager: CryptographyManager
-    private var allowDeviceCredentials: Boolean = false
 
-    private fun init(context: Context, allowDeviceCredentials: Boolean) {
-        this.allowDeviceCredentials = allowDeviceCredentials
-        cryptographyManager = CryptographyManagerImpl(context, allowDeviceCredentials)
+    @JvmStatic
+    internal fun initialize(context: Context, config: BiometricConfig) {
+        this.context = context.applicationContext
+        this.config = config
+        this.cryptographyManager = CryptographyManagerImpl(context, config)
     }
 
     /**
-     * To encrypt the data after biometric process is success.
+     * Check whether the biometric is available and enrolled
+     * @param allowDeviceCredentials true if allow PIN/Pattern/Password to login
+     * @return true if available and enrolled.
+     */
+    fun isBiometricAvailable(allowDeviceCredentials: Boolean = false): Boolean {
+        return context?.getStrongestAuthenticators(allowDeviceCredentials) is StrongestAuthenticators.Available
+    }
+
+    /**
+     * Check whether the biometric is unavailable or unsupported on this device
+     * @param allowDeviceCredentials true if allows PIN/Pattern/Password to login
+     * @return true if unavailable or unsupported
+     */
+    fun isBiometricUnAvailable(allowDeviceCredentials: Boolean = false): Boolean {
+        return context?.getStrongestAuthenticators(allowDeviceCredentials) is StrongestAuthenticators.UnAvailable
+    }
+
+    /**
+     * Check whether the biometric is insecure or not.
+     * Insecure means the biometric is supported but the hardware sensor has security vulnerability.
+     * @param allowDeviceCredentials true if allows PIN/Pattern/Password to login
+     * @return true if biometric is insecure
+     */
+    fun isBiometricInsecure(allowDeviceCredentials: Boolean = false): Boolean {
+        return context?.getStrongestAuthenticators(allowDeviceCredentials) is StrongestAuthenticators.InsecureHardWare
+    }
+
+    /**
+     * Check whether the biometric is enrolled or not.
+     * @param allowDeviceCredentials true if allows PIN/Pattern/Password to login
+     * @return true if biometric is enrolled.
+     */
+    fun isBiometricNotEnrolled(allowDeviceCredentials: Boolean = false): Boolean {
+        return context?.getStrongestAuthenticators(allowDeviceCredentials) is StrongestAuthenticators.NotEnrolled
+    }
+
+    /**
+     * Encrypt data with given cipher.
      * @param data The data you want to encrypt.
      * @param cipher The cipher from [BiometricPrompt.CryptoObject] after [BiometricPrompt.AuthenticationResult] success.
      */
     fun <T> encryptData(data: T, cipher: Cipher) = cryptographyManager.encryptData(data, cipher)
 
     /**
-     * To encrypt the data after biometric process is success.
+     * Decrypt the cipher text with given cipher and convert to an object with clazz type.
      * @param ciphertext The cipher text to decrypt.
      * @param cipher The cipher from [BiometricPrompt.CryptoObject] after [BiometricPrompt.AuthenticationResult] success.
      * @param clazz The Class of decrypted object to convert.
@@ -34,8 +83,7 @@ class BiometricHelper private constructor() {
 
     /**
      * Persist the encrypted data to storage.
-     *
-     * @param encryptedData The Encrypted [EncryptedData] object want to save
+     * @param encryptedData The encrypted [EncryptedData] object want to save
      */
     fun saveEncryptedData(encryptedData: EncryptedData) {
         cryptographyManager.saveEncryptedData(encryptedData)
@@ -43,18 +91,21 @@ class BiometricHelper private constructor() {
 
     /**
      * Gets the saved encrypted data from storage.
-     * @return The Encrypted [EncryptedData] object
+     * @return The encrypted [EncryptedData] object or null
      */
     fun getEncryptedData(): EncryptedData? {
         return cryptographyManager.getEncryptedData()
     }
 
+    /**
+     * Remove the encrypted data from storage.
+     */
     fun removeEncryptedData() {
         cryptographyManager.removeEncryptedData()
     }
 
     /**
-     * Encrypt and persist the authentication data.
+     * Encrypt and persist the authentication data with given cipher.
      * @param data The authentication data you want to encrypt and persist to storage.
      * @param cipher The cipher from [BiometricPrompt.CryptoObject] after [BiometricPrompt.AuthenticationResult] success.
      */
@@ -63,16 +114,16 @@ class BiometricHelper private constructor() {
         cipher: Cipher,
         fallbackUnrecoverable: (() -> Unit)? = null,
     ) {
-        try {
+        runCatching {
             val encryptedData = encryptData(data, cipher)
             saveEncryptedData(encryptedData)
-        } catch (e: UnableToEncryptData) {
+        }.onException(UnableToInitializeCipher::class, UnableToEncryptData::class) {
             fallbackUnrecoverable?.invoke()
         }
     }
 
     /**
-     * Encrypt and persist the authentication data.
+     * Decrypt the saved data with given cipher and convert to an object with clazz type.
      * @param cipher The cipher from [BiometricPrompt.CryptoObject] after [BiometricPrompt.AuthenticationResult] success.
      * @param clazz The Class of authentication object to convert.
      *
@@ -83,21 +134,21 @@ class BiometricHelper private constructor() {
         clazz: Class<T>,
         fallbackUnrecoverable: (() -> Unit)? = null,
     ): T? {
-        try {
-            val encryptedData = getEncryptedData()
-            if (encryptedData == null) {
-                fallbackUnrecoverable?.invoke()
-                return null
-            }
-            return decryptData(encryptedData.ciphertext, cipher, clazz)
-        } catch (e: Exception) {
+        val encryptedData = getEncryptedData()
+        if (encryptedData == null) {
             fallbackUnrecoverable?.invoke()
             return null
         }
+        return runCatching {
+            decryptData(encryptedData.ciphertext, cipher, clazz)
+        }.onException(UnableToInitializeCipher::class, UnableToDecryptData::class) {
+            fallbackUnrecoverable?.invoke()
+            null
+        }.getOrNull()
     }
 
     /**
-     * Gets saved encrypted authentication data from shared preferences.
+     * Gets saved encrypted authentication data from storage.
      * @return encrypted authentication data.
      */
     fun getEncryptedAuthenticationData(): EncryptedData? {
@@ -115,7 +166,6 @@ class BiometricHelper private constructor() {
      *  see [BiometricPrompt.PromptInfo.Builder.setConfirmationRequired].
      * @param negativeTextButton The label to be used for the negative button on the prompt.
      *  Note: only visible if not allow device credentials authentication (pin/password/pattern)
-     * @param allowDeviceCredentials true if allow PIN/Pattern/Password to login
      * @return Biometric PromptInfo object with specified options.
      */
     @Suppress("LongParameterList")
@@ -126,8 +176,8 @@ class BiometricHelper private constructor() {
         description: String,
         confirmationRequired: Boolean = false,
         negativeTextButton: String? = null,
-        allowDeviceCredentials: Boolean = false,
     ): BiometricPrompt.PromptInfo {
+        checkNotNull(config) { "Call initBiometricAuth() from your application first!" }
         val promptInfo = BiometricPrompt.PromptInfo.Builder().apply {
             setTitle(title)
             setSubtitle(subtitle)
@@ -135,10 +185,11 @@ class BiometricHelper private constructor() {
             setConfirmationRequired(confirmationRequired)
         }
 
-        val promptAuthenticators = context.getStrongestAuthenticators(allowDeviceCredentials)
-        if (promptAuthenticators is StrongestAuthenticators.Available) {
-            promptInfo.setAllowedAuthenticators((promptAuthenticators.authenticators))
-            if (!promptAuthenticators.allowDeviceCredentials) {
+        val strongestAuthenticators =
+            context.getStrongestAuthenticators(config!!.allowDeviceCredentials)
+        if (strongestAuthenticators is StrongestAuthenticators.Available) {
+            promptInfo.setAllowedAuthenticators(strongestAuthenticators.authenticators)
+            if (!strongestAuthenticators.allowDeviceCredentials) {
                 promptInfo.setNegativeButtonText(negativeTextButton ?: "Cancel")
             }
         }
@@ -248,25 +299,6 @@ class BiometricHelper private constructor() {
                 super.onAuthenticationSucceeded(result)
                 callback.invoke(BiometricResult.Success(result))
             }
-        }
-    }
-
-    companion object {
-        private var instance: BiometricHelper? = null
-
-        /**
-         * Get the singleton instance of [BiometricHelper].
-         * @param context The application context
-         * @param allowDeviceCredentials Allow using device credentials to access keystore, default is false
-         */
-        fun getInstance(
-            context: Context,
-            allowDeviceCredentials: Boolean = false,
-        ): BiometricHelper {
-            if (instance == null) {
-                instance = BiometricHelper().apply { init(context, allowDeviceCredentials) }
-            }
-            return instance!!
         }
     }
 }

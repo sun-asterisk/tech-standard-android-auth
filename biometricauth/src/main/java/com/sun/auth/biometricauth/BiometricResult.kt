@@ -1,6 +1,8 @@
 package com.sun.auth.biometricauth
 
 import androidx.biometric.BiometricPrompt
+import com.sun.auth.biometricauth.internal.UnableToDecryptData
+import com.sun.auth.biometricauth.internal.UnableToInitializeCipher
 import javax.crypto.Cipher
 
 sealed interface BiometricResult {
@@ -18,7 +20,7 @@ sealed interface BiometricResult {
          * Check that Biometric authentication is locked out.
          * @return true if temporary disabled short period or disabled until user unlocks via pass/pin/pattern
          */
-        fun isBiometricLockout(): Boolean = errorCode == BiometricPrompt.ERROR_LOCKOUT ||
+        fun isBiometricLockout() = errorCode == BiometricPrompt.ERROR_LOCKOUT ||
             errorCode == BiometricPrompt.ERROR_LOCKOUT_PERMANENT
     }
 
